@@ -19,6 +19,7 @@ export default [
             globals: {
                 ...globals.browser,
                 __PM_ANTHROPIC_KEY__: 'readonly',
+                __BUILD_REF__: 'readonly',
             },
             ecmaVersion: 2022,
             sourceType: 'module',

@@ -103,10 +103,29 @@ function Dashboard() {
         <div className="app-layout">
             {/* Top Navigation */}
             <header className="top-nav">
-                <div className="flex items-center gap-lg">
+                <div className="flex items-center gap-lg" style={{ minWidth: 0 }}>
                     <h1 style={{ fontSize: '24px', fontWeight: 300, letterSpacing: '0.05em' }}>
                         Pink Milk <span style={{ color: 'var(--primary)' }}>Social Engine</span>
                     </h1>
+                    <span
+                        className="text-caption"
+                        style={{
+                            color: 'var(--slate-400)',
+                            fontFamily: 'ui-monospace, monospace',
+                            fontSize: '10px',
+                            letterSpacing: '0.02em',
+                            flexShrink: 0,
+                        }}
+                        title={
+                            typeof __BUILD_REF__ !== 'undefined' && __BUILD_REF__ !== 'dev'
+                                ? `Build: ${__BUILD_REF__}`
+                                : 'Local dev (geen Vercel-commit)'
+                        }
+                    >
+                        {typeof __BUILD_REF__ !== 'undefined' && __BUILD_REF__ !== 'dev'
+                            ? __BUILD_REF__.slice(0, 7)
+                            : 'local'}
+                    </span>
                 </div>
 
                 <div style={{ marginLeft: 'auto' }} className="flex items-center gap-lg">

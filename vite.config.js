@@ -11,10 +11,18 @@ export default defineConfig(({ mode }) => {
     ''
   ).trim()
 
+  const buildRef = (
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.CF_PAGES_COMMIT_SHA ||
+    ''
+  ).trim()
+
   return {
     plugins: [react()],
     define: {
       __PM_ANTHROPIC_KEY__: JSON.stringify(anthropicKey),
+      /** Shown in UI so production matches repo (Vercel injects VERCEL_GIT_COMMIT_SHA on build) */
+      __BUILD_REF__: JSON.stringify(buildRef || 'dev'),
     },
     server: {
       headers: {
