@@ -212,18 +212,11 @@ function Dashboard() {
                                             <Icon size={16} style={{ color: isActive ? 'var(--white)' : 'var(--slate-500)' }} />
                                         )}
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div>
                                             <span>{t('stepWord')} {step.id}: {t(step.name)}</span>
                                         </div>
-                                        <p style={{
-                                            fontSize: '12px',
-                                            opacity: 0.7,
-                                            marginTop: '2px',
-                                            fontFamily: 'var(--font-body)'
-                                        }}>
-                                            {t(step.subtitle)}
-                                        </p>
+                                        <p>{t(step.subtitle)}</p>
                                     </div>
                                     {isActive && <ArrowRight size={16} />}
                                 </button>
