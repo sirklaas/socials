@@ -3,8 +3,7 @@ import { Image as ImageIcon, Wand2, RefreshCw, Download, Check, Settings, Palett
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
 import { motion } from 'framer-motion';
-import { generateThreeVisualPromptVariants, generateImagePromptsForChannel } from '../services/claude';
-import { CHANNEL_DEFS } from '../constants/channels';
+import { generateThreeVisualPromptVariants } from '../services/claude';
 
 const STYLES = [
     { id: 'minimal', name: 'Minimalist', desc: 'Clean and simple' },
@@ -25,12 +24,11 @@ function buildCardForVisuals(contentData) {
 }
 
 export default function VisualAssetsStep() {
-    const { contentData, updateContent, updateIdeaFlow, markStepComplete } = useGlobalContext();
+    const { contentData, updateContent, markStepComplete } = useGlobalContext();
     const { language, t } = useLanguage();
     const [selectedStyle, setSelectedStyle] = useState('minimal');
     const [isGenerating, setIsGenerating] = useState(false);
     const [genClaude, setGenClaude] = useState(false);
-    const [genChannelPrompts, setGenChannelPrompts] = useState(false);
     const [claudeErr, setClaudeErr] = useState(null);
     const [localVariantId, setLocalVariantId] = useState(null);
 
@@ -39,19 +37,6 @@ export default function VisualAssetsStep() {
 
     const briefCard = useMemo(() => buildCardForVisuals(contentData), [contentData]);
     const hasBrief = !!(briefCard.heading?.trim() || briefCard.body?.trim());
-
-    const ideaFlow = contentData.concept?.ideaFlow || {};
-    const selectedChannel = ideaFlow.selectedChannel || 'blog';
-
-    const cardForChannelPrompts = useMemo(() => {
-        const cards = ideaFlow.conceptCards;
-        const sid = ideaFlow.selectedCardId;
-        const sel = Array.isArray(cards) ? cards.find((c) => String(c.id) === String(sid)) : null;
-        if (sel && (sel.heading?.trim() || sel.body?.trim())) return sel;
-        return briefCard;
-    }, [ideaFlow.conceptCards, ideaFlow.selectedCardId, briefCard]);
-
-    const hasCardForChannel = !!(cardForChannelPrompts.heading?.trim() || cardForChannelPrompts.body?.trim());
 
     const [prompt, setPrompt] = useState(
         contentData.visuals?.imagePrompts?.main ||
@@ -87,27 +72,6 @@ export default function VisualAssetsStep() {
               ]
             : STYLES;
 
-    const handleGenChannelImagePrompts = async () => {
-        if (!hasCardForChannel) return;
-        setClaudeErr(null);
-        setGenChannelPrompts(true);
-        try {
-            const out = await generateImagePromptsForChannel(
-                cardForChannelPrompts,
-                selectedChannel,
-                language === 'nl' ? 'nl' : 'en'
-            );
-            const next = { main: out.main_image_prompt, sub: out.sub_image_prompt };
-            updateContent('visuals', { imagePrompts: next });
-            updateIdeaFlow({ imagePrompts: next });
-            setPrompt(out.main_image_prompt);
-        } catch (e) {
-            setClaudeErr(e.message || 'Claude error');
-        } finally {
-            setGenChannelPrompts(false);
-        }
-    };
-
     const handleGenClaudeVariants = async () => {
         if (!hasBrief) return;
         setClaudeErr(null);
@@ -135,15 +99,13 @@ export default function VisualAssetsStep() {
         if (!Array.isArray(variants) || !localVariantId) return;
         const v = variants.find((x) => String(x.id) === String(localVariantId));
         if (!v) return;
-        const nextPrompts = {
-            main: v.main_image_prompt,
-            sub: v.sub_image_prompt || v.main_image_prompt,
-        };
         updateContent('visuals', {
             selectedPromptVariantId: String(v.id),
-            imagePrompts: nextPrompts,
+            imagePrompts: {
+                main: v.main_image_prompt,
+                sub: v.sub_image_prompt || v.main_image_prompt,
+            },
         });
-        updateIdeaFlow({ imagePrompts: nextPrompts });
         setPrompt(v.main_image_prompt);
         markStepComplete(3);
     };
@@ -220,65 +182,6 @@ export default function VisualAssetsStep() {
                                 </div>
                             ))}
                         </div>
-                    </div>
-
-                    <div>
-                        <label className="label">{t('channelTitle')}</label>
-                        <div className="visual-step-channel-pills" role="group" aria-label={t('channelTitle')}>
-                            {CHANNEL_DEFS.map((ch) => (
-                                <button
-                                    key={ch.id}
-                                    type="button"
-                                    className={`btn btn-sm visual-step-channel-pills__btn${
-                                        selectedChannel === ch.id ? ' btn-primary' : ' btn-secondary'
-                                    }`}
-                                    onClick={() => updateIdeaFlow({ selectedChannel: ch.id })}
-                                >
-                                    {t(ch.labelKey)}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            style={{ width: '100%', marginTop: 'var(--space-md)' }}
-                            onClick={handleGenChannelImagePrompts}
-                            disabled={!hasCardForChannel || genChannelPrompts}
-                        >
-                            {genChannelPrompts ? (
-                                <>
-                                    <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                                    {t('step3ClaudeGenerating')}
-                                </>
-                            ) : (
-                                <>
-                                    <Wand2 size={18} />
-                                    {t('genImagePrompts')}
-                                </>
-                            )}
-                        </button>
-                        <p className="text-caption text-muted" style={{ marginTop: '8px' }}>
-                            {t('step3ChannelImagePromptsExplain')}
-                        </p>
-                        {contentData.visuals?.imagePrompts?.main && (
-                            <div
-                                className="visual-step-channel-output"
-                                style={{ marginTop: 'var(--space-md)' }}
-                            >
-                                <p className="text-caption font-medium" style={{ margin: '0 0 4px' }}>
-                                    {t('imagePromptMain')}
-                                </p>
-                                <p className="text-caption text-muted" style={{ margin: '0 0 10px', whiteSpace: 'pre-wrap' }}>
-                                    {contentData.visuals.imagePrompts.main}
-                                </p>
-                                <p className="text-caption font-medium" style={{ margin: '0 0 4px' }}>
-                                    {t('imagePromptSub')}
-                                </p>
-                                <p className="text-caption text-muted" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                                    {contentData.visuals.imagePrompts.sub}
-                                </p>
-                            </div>
-                        )}
                     </div>
 
                     <div>
