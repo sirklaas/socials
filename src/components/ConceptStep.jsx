@@ -6,7 +6,7 @@ import {
     Newspaper,
     TrendingUp,
     Heart,
-    CloudUpload,
+    UploadCloud,
 } from 'lucide-react';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -505,7 +505,7 @@ export default function ConceptStep() {
                             onClick={handleSaveToPocketBase}
                             title={t('saveToPocketBaseHint')}
                         >
-                            {isSaving ? <RefreshCw size={12} className="icon-spin" /> : <CloudUpload size={12} />}
+                            {isSaving ? <RefreshCw size={12} className="icon-spin" /> : <UploadCloud size={12} />}
                             {t('saveToPocketBase')}
                         </button>
                         <button
