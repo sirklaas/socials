@@ -1,15 +1,24 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { extractJson } from '../utils/jsonFromLLM.js';
 
-const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
+/**
+ * Order: Vite-injected merge (see vite.config.js), then explicit VITE_* vars.
+ * Use ANTHROPIC_API_KEY in .env — same as Anthropic docs and most tooling/skills.
+ */
+function resolveAnthropicApiKey() {
+    const fromDefine = typeof __PM_ANTHROPIC_API_KEY__ !== 'undefined' ? __PM_ANTHROPIC_API_KEY__ : '';
+    return (
+        (fromDefine && String(fromDefine).trim()) ||
+        (import.meta.env.VITE_CLAUDE_API_KEY && String(import.meta.env.VITE_CLAUDE_API_KEY).trim()) ||
+        (import.meta.env.VITE_ANTHROPIC_API_KEY && String(import.meta.env.VITE_ANTHROPIC_API_KEY).trim()) ||
+        ''
+    );
+}
 
-const anthropic = new Anthropic({
-    apiKey: apiKey,
-    dangerouslyAllowBrowser: true // Since we're in a frontend app (not ideal for production, but okay for this prototype)
-});
+const CONCEPT_SYSTEM = `You are Pink Milk's creative partner: Dutch entertainment, live-feel shows, quizzes, and sharp but warm humor. Your job is to invent content ideas that feel personal to the brand and the show formats — not generic marketing.`;
 
 /**
- * @param {object} selections { news, social } each { title, summary, source }
+ * @param {object} selections { news, social, pinkmilk, pinkmilkExtra }
  * @param {string} lang 'nl' | 'en'
  */
 export async function generateIdeaConceptCards(selections, lang = 'nl') {
@@ -17,36 +26,52 @@ export async function generateIdeaConceptCards(selections, lang = 'nl') {
     const langName = lang === 'nl' ? 'Dutch' : 'English';
     const extra = (pinkmilkExtra && String(pinkmilkExtra).trim()) || '—';
 
-    const prompt = `You are a content strategist for Pink Milk (creator / video / social brand).
+    const prompt = `## Inspiration (anchors only — do not copy verbatim; use as sparks)
 
-The user selected these inspiration topics:
+1) Entertainment / news pulse (NL): **${news?.title || '—'}**
+   Context: ${news?.summary || '—'}
 
-1) NEWS / entertainment headlines (Netherlands): Title: ${news?.title || '—'} — ${news?.summary || ''}
-2) TRENDING (e.g. YouTube / social NL): Title: ${social?.title || '—'} — ${social?.summary || ''}
-3) PINK MILK show / format to lean into: ${pinkmilk?.title || '—'} — ${pinkmilk?.summary || ''}
-4) User's own note (optional, use if not "—"): ${extra}
+2) What's trending (e.g. YouTube / social NL): **${social?.title || '—'}**
+   Context: ${social?.summary || '—'}
 
-Generate exactly 5 distinct content concept cards that could become a blog or social post. Tie ideas to the chosen show format where it fits; blend news + trending + optional note. Avoid war, graphic violence, or crime-heavy angles.
+3) Pink Milk show or format we're leaning into: **${pinkmilk?.title || '—'}**
+   Context: ${pinkmilk?.summary || '—'}
 
-Return ONLY valid JSON with this shape (no markdown, no extra text):
+4) Extra note from the creator (optional): ${extra}
+
+## Your task
+
+Produce **exactly 5** different, **creative** content concepts for Pink Milk.
+
+Each concept must do at least one of the following:
+- Reveal something about **what these shows are** (energy, games, audience, Dutch TV nostalgia, studio vibe).
+- Say something about **the creator / host persona** — warmth, wit, self-aware humor, connection with the audience — without inventing biographical facts that weren't implied above.
+- Connect **lightly** to the news or trending thread only where it feels natural; never force hard news into a comedy-show frame.
+
+Rules:
+- The 5 ideas must be **clearly distinct** (different hooks, formats, angles — not five versions of the same post).
+- Favor ideas that could become a **blog post, carousel, or caption** for this brand.
+- Avoid war, graphic violence, crime sensationalism, and cruel punch-down humor.
+- Language for all user-visible strings: **${langName}**.
+
+Return ONLY valid JSON (no markdown, no commentary):
 {
   "cards": [
     {
       "id": "1",
-      "intro_heading": "string, short hook line",
-      "heading": "string, main title",
-      "sub_heading": "string, supporting line",
-      "body": "string, 4-8 short paragraphs or line breaks, plain text"
+      "intro_heading": "short hook line",
+      "heading": "main title",
+      "sub_heading": "supporting line",
+      "body": "plain text, 4-8 short paragraphs or single lines separated by line breaks"
     }
   ]
 }
 
-Language for all strings: ${langName}.
 Use ids "1" through "5".`;
 
     const raw = await generateContent(
         prompt,
-        'You return ONLY valid JSON objects. No markdown fences.',
+        `${CONCEPT_SYSTEM} You return ONLY valid JSON objects. No markdown fences.`,
         4096
     );
     const parsed = extractJson(raw);
@@ -103,10 +128,17 @@ export async function generateContent(
     systemPrompt = 'You are a social media expert.',
     maxTokens = 2048
 ) {
-    console.log('Claude API Key loaded:', !!apiKey);
+    const apiKey = resolveAnthropicApiKey();
     if (!apiKey) {
-        throw new Error('Claude API key is not configured. Please add VITE_CLAUDE_API_KEY to your .env file.');
+        throw new Error(
+            'Anthropic API key missing. Add ANTHROPIC_API_KEY to your .env (recommended — same as Anthropic skills/docs), or VITE_ANTHROPIC_API_KEY / VITE_CLAUDE_API_KEY. Restart the dev server after changing .env. For Vercel, set the same variable(s) under Project → Environment Variables.'
+        );
     }
+
+    const anthropic = new Anthropic({
+        apiKey,
+        dangerouslyAllowBrowser: true,
+    });
 
     try {
         const response = await anthropic.messages.create({
