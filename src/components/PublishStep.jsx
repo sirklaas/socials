@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Globe, Send, Check, ChevronLeft, ChevronRight, Youtube, Instagram, Linkedin, Smartphone, AlertCircle, Zap } from 'lucide-react';
-import { useGlobalContext } from '../context/GlobalContext';
+import { Calendar, Clock, Globe, Send, Check, ChevronLeft, ChevronRight, Youtube, Instagram, Linkedin, Smartphone, Zap } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { motion } from 'framer-motion';
 
@@ -12,7 +11,6 @@ const PLATFORMS = [
     { id: 'blog', name: 'Blog', icon: Globe, color: '#2563EB' },
 ];
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const OPTIMAL_TIMES = [
     { platform: 'YouTube', time: '14:00', day: 'Wed' },
     { platform: 'Instagram', time: '18:00', day: 'Thu' },
@@ -21,7 +19,6 @@ const OPTIMAL_TIMES = [
 ];
 
 export default function PublishStep() {
-    const { contentData } = useGlobalContext();
     const { language, t } = useLanguage();
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState('14:00');

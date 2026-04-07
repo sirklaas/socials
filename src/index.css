@@ -11,9 +11,9 @@
     --font-body: 'Inter', system-ui, sans-serif;
 
     /* Primary Colors */
-    --primary: #2563EB;
-    --primary-dark: #1E40AF;
-    --primary-light: #60A5FA;
+    --primary: #1d4ed8;
+    --primary-dark: #1e3a8a;
+    --primary-light: #3b82f6;
     --primary-ultralight: #DBEAFE;
 
     /* Accent Colors */
@@ -47,7 +47,7 @@
     --shadow-primary: 0 4px 12px rgba(37, 99, 235, 0.3);
 
     /* Layout */
-    --sidebar-width: 280px;
+    --sidebar-width: 196px;
     --topnav-height: 64px;
     --container-radius: 16px;
     --button-radius: 8px;
@@ -250,6 +250,10 @@ h6 {
 
 .container-grid.cols-2 {
     grid-template-columns: 1fr 1fr;
+}
+
+.container-grid.cols-1-2 {
+    grid-template-columns: 1fr 2fr;
 }
 
 .container-grid.cols-3 {

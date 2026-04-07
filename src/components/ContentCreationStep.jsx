@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Type, Hash, Sparkles, RefreshCw, Copy, Check, Youtube, Instagram, Linkedin, Facebook, Globe, Smartphone } from 'lucide-react';
+import { Type, Hash, Sparkles, RefreshCw, Copy, Youtube, Instagram, Linkedin, Facebook, Smartphone } from 'lucide-react';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
-import { motion } from 'framer-motion';
 
 const PLATFORMS = [
     { id: 'youtube', name: 'YouTube', icon: Youtube, color: '#FF0000' },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, Eye, Youtube, Instagram, Linkedin, Smartphone, Globe, Check, AlertCircle, Edit, Monitor, LayoutGrid, Maximize2 } from 'lucide-react';
+import { CheckCircle, Eye, Youtube, Instagram, Linkedin, Smartphone, Globe, Check, AlertCircle, Edit, LayoutGrid, Maximize2 } from 'lucide-react';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
 import { motion } from 'framer-motion';

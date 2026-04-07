@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Wand2, RefreshCw, List, Search, Image, Tag, User, Clock, Eye, Check, GripVertical } from 'lucide-react';
+import { FileText, Wand2, RefreshCw, List, Search, Image, Tag, User, Clock, Eye, GripVertical } from 'lucide-react';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
 import { motion } from 'framer-motion';

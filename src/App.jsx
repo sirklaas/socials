@@ -8,12 +8,9 @@ import {
     FileText,
     CheckCircle,
     Calendar,
-    ChevronRight,
     Check,
     ArrowRight,
-    Bell,
     User,
-    Save,
     Send,
     Languages
 } from 'lucide-react';
@@ -58,7 +55,6 @@ function Dashboard() {
         currentStep,
         setCurrentStep,
         completedSteps,
-        markStepComplete,
         isSaving,
         lastSaved,
         createNewCampaign,
@@ -94,17 +90,6 @@ function Dashboard() {
             </div>
         );
     }
-
-    const nextStep = () => {
-        if (currentStep < 8) {
-            markStepComplete(currentStep);
-            setCurrentStep(prev => prev + 1);
-        }
-    };
-
-    const prevStep = () => {
-        if (currentStep > 1) setCurrentStep(prev => prev - 1);
-    };
 
     const formatLastSaved = () => {
         if (!lastSaved) return t('notSaved');

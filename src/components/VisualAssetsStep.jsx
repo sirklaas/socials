@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Image as ImageIcon, Wand2, RefreshCw, Download, Check, Settings, Palette, Maximize2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Image as ImageIcon, Wand2, RefreshCw, Download, Check, Settings, Palette } from 'lucide-react';
 import { useGlobalContext } from '../context/GlobalContext';
+import { useLanguage } from '../context/LanguageContext';
 import { motion } from 'framer-motion';
 
 const STYLES = [
@@ -16,6 +17,13 @@ export default function VisualAssetsStep() {
     const [selectedStyle, setSelectedStyle] = useState('minimal');
     const [isGenerating, setIsGenerating] = useState(false);
     const [prompt, setPrompt] = useState(contentData.concept.selected?.title || 'Abstract technology concept with blue and purple gradients');
+
+    useEffect(() => {
+        const main = contentData.visuals?.imagePrompts?.main;
+        if (main && typeof main === 'string') {
+            setPrompt(main);
+        }
+    }, [contentData.visuals?.imagePrompts?.main]);
 
     const handleGenerate = () => {
         setIsGenerating(true);

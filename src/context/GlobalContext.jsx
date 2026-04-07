@@ -3,17 +3,47 @@ import { createSocial, updateSocial, getAllSocials, parseSocialRecord } from '..
 
 const GlobalContext = createContext();
 
+export const defaultIdeaFlow = {
+    newsTopics: [],
+    socialTopics: [],
+    picks: { newsUrl: null, socialUrl: null },
+    conceptCards: [],
+    selectedCardId: null,
+    selectedChannel: 'blog',
+    facebookLinkedFromInsta: false,
+    imagePrompts: null,
+};
+
+const defaultConcept = {
+    topic: '',
+    audience: 'Entrepreneurs',
+    tone: 'Professional',
+    input_source: '',
+    extra_input: '',
+    goals: [],
+    suggestions: [],
+    selected: null,
+    ideaFlow: { ...defaultIdeaFlow },
+};
+
+function normalizeConcept(concept) {
+    const c = concept && typeof concept === 'object' ? concept : {};
+    return {
+        ...defaultConcept,
+        ...c,
+        ideaFlow: {
+            ...defaultIdeaFlow,
+            ...(c.ideaFlow && typeof c.ideaFlow === 'object' ? c.ideaFlow : {}),
+            picks: {
+                ...defaultIdeaFlow.picks,
+                ...(c.ideaFlow?.picks && typeof c.ideaFlow.picks === 'object' ? c.ideaFlow.picks : {}),
+            },
+        },
+    };
+}
+
 const initialContentData = {
-    concept: {
-        topic: '',
-        audience: 'Entrepreneurs',
-        tone: 'Professional',
-        input_source: '',
-        extra_input: '',
-        goals: [],
-        suggestions: [],
-        selected: null
-    },
+    concept: normalizeConcept({}),
     platforms: {
         youtube: { enabled: true, title: '', body: '', hashtags: [] },
         tiktok: { enabled: true, title: '', body: '', hashtags: [] },
@@ -25,7 +55,8 @@ const initialContentData = {
     visuals: {
         hero: null,
         variations: [],
-        thumbnails: []
+        thumbnails: [],
+        imagePrompts: null,
     },
     video: {
         script: '',
@@ -81,17 +112,6 @@ export const GlobalProvider = ({ children }) => {
         }
     };
 
-    // Auto-save to PocketBase when content changes (debounced)
-    useEffect(() => {
-        if (!currentRecordId) return;
-
-        const saveTimeout = setTimeout(async () => {
-            await saveToDatabase();
-        }, 2000); // 2 second debounce
-
-        return () => clearTimeout(saveTimeout);
-    }, [contentData, currentRecordId]);
-
     const saveToDatabase = useCallback(async () => {
         if (isSaving) return;
 
@@ -117,6 +137,16 @@ export const GlobalProvider = ({ children }) => {
             setIsSaving(false);
         }
     }, [contentData, currentRecordId, isSaving]);
+
+    useEffect(() => {
+        if (!currentRecordId) return;
+
+        const saveTimeout = setTimeout(async () => {
+            await saveToDatabase();
+        }, 2000);
+
+        return () => clearTimeout(saveTimeout);
+    }, [contentData, currentRecordId, saveToDatabase]);
 
     const createNewCampaign = async (name = 'Nieuwe Campagne') => {
         try {
@@ -165,9 +195,9 @@ export const GlobalProvider = ({ children }) => {
         if (parsed) {
             setCurrentRecordId(parsed.id);
             setContentData({
-                concept: parsed.concept || initialContentData.concept,
+                concept: normalizeConcept(parsed.concept),
                 platforms: parsed.platforms || initialContentData.platforms,
-                visuals: parsed.visuals || initialContentData.visuals,
+                visuals: { ...initialContentData.visuals, ...(parsed.visuals || {}) },
                 video: parsed.video || initialContentData.video,
                 blog: parsed.blog || initialContentData.blog,
                 schedule: parsed.schedule || initialContentData.schedule,
@@ -183,6 +213,67 @@ export const GlobalProvider = ({ children }) => {
             [section]: { ...prev[section], ...data }
         }));
     };
+
+    const updateIdeaFlow = useCallback((partial) => {
+        setContentData(prev => {
+            const cur = prev.concept.ideaFlow || defaultIdeaFlow;
+            const next = {
+                ...cur,
+                ...partial,
+                picks: { ...cur.picks, ...(partial.picks || {}) },
+            };
+            return {
+                ...prev,
+                concept: { ...prev.concept, ideaFlow: next },
+            };
+        });
+    }, []);
+
+    const confirmStep1Blog = useCallback((card, imagePrompts) => {
+        if (!card) return;
+        const legacySelected = {
+            id: card.id,
+            title: card.heading,
+            description: card.body,
+            keyPoints: [card.intro_heading, card.sub_heading].filter(Boolean),
+        };
+        setContentData(prev => ({
+            ...prev,
+            concept: {
+                ...prev.concept,
+                topic: card.heading || prev.concept.topic,
+                selected: legacySelected,
+                suggestions: prev.concept.ideaFlow?.conceptCards?.length
+                    ? prev.concept.ideaFlow.conceptCards.map((c, i) => ({
+                          id: c.id ?? i + 1,
+                          title: c.heading,
+                          description: c.body,
+                          keyPoints: [c.intro_heading, c.sub_heading].filter(Boolean),
+                      }))
+                    : prev.concept.suggestions,
+                ideaFlow: {
+                    ...prev.concept.ideaFlow,
+                    imagePrompts: imagePrompts || prev.concept.ideaFlow?.imagePrompts || null,
+                },
+            },
+            blog: {
+                ...prev.blog,
+                title: card.heading || prev.blog.title,
+                content:
+                    `${card.intro_heading ? `*${card.intro_heading}*\n\n` : ''}${card.body || ''}`.trim() ||
+                    prev.blog.content,
+                seo: {
+                    ...prev.blog.seo,
+                    title: card.heading || prev.blog.seo?.title,
+                    description: (card.sub_heading || card.body || '').slice(0, 160),
+                },
+            },
+            visuals: {
+                ...prev.visuals,
+                imagePrompts: imagePrompts || prev.visuals.imagePrompts,
+            },
+        }));
+    }, []);
 
     const setPlatformContent = (platform, data) => {
         setContentData(prev => ({
@@ -216,6 +307,8 @@ export const GlobalProvider = ({ children }) => {
             // Content
             contentData,
             updateContent,
+            updateIdeaFlow,
+            confirmStep1Blog,
             setPlatformContent,
 
             // Database
