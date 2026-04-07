@@ -1,24 +1,47 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { extractJson } from '../utils/jsonFromLLM.js';
 
-/**
- * Order: Vite-injected merge (see vite.config.js), then explicit VITE_* vars.
- * Use ANTHROPIC_API_KEY in .env — same as Anthropic docs and most tooling/skills.
- */
-function resolveAnthropicApiKey() {
-    const fromDefine = typeof __PM_ANTHROPIC_API_KEY__ !== 'undefined' ? __PM_ANTHROPIC_API_KEY__ : '';
+/** Injected in vite.config from .env (ANTHROPIC_API_KEY or VITE_ANTHROPIC_API_KEY). */
+function getApiKey() {
+    const fromVite =
+        typeof __PM_ANTHROPIC_KEY__ !== 'undefined' ? String(__PM_ANTHROPIC_KEY__).trim() : '';
     return (
-        (fromDefine && String(fromDefine).trim()) ||
-        (import.meta.env.VITE_CLAUDE_API_KEY && String(import.meta.env.VITE_CLAUDE_API_KEY).trim()) ||
-        (import.meta.env.VITE_ANTHROPIC_API_KEY && String(import.meta.env.VITE_ANTHROPIC_API_KEY).trim()) ||
+        fromVite ||
+        String(import.meta.env.VITE_ANTHROPIC_API_KEY || '').trim() ||
+        String(import.meta.env.VITE_CLAUDE_API_KEY || '').trim() ||
         ''
     );
 }
 
 const CONCEPT_SYSTEM = `You are Pink Milk's creative partner: Dutch entertainment, live-feel shows, quizzes, and sharp but warm humor. Your job is to invent content ideas that feel personal to the brand and the show formats — not generic marketing.`;
 
+function missingKeyError() {
+    return new Error(
+        'Geen API key. Open het bestand .env naast package.json en zet één regel: ANTHROPIC_API_KEY=jouw_key hier (of VITE_ANTHROPIC_API_KEY=...). Sla op en herstart npm run dev.',
+    );
+}
+
+async function callClaude(prompt, system, maxTokens) {
+    const apiKey = getApiKey();
+    if (!apiKey) throw missingKeyError();
+
+    const client = new Anthropic({
+        apiKey,
+        dangerouslyAllowBrowser: true,
+    });
+
+    const response = await client.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: maxTokens,
+        system,
+        messages: [{ role: 'user', content: prompt }],
+    });
+
+    return response.content[0].text;
+}
+
 /**
- * @param {object} selections { news, social, pinkmilk, pinkmilkExtra }
+ * @param {object} selections
  * @param {string} lang 'nl' | 'en'
  */
 export async function generateIdeaConceptCards(selections, lang = 'nl') {
@@ -26,7 +49,7 @@ export async function generateIdeaConceptCards(selections, lang = 'nl') {
     const langName = lang === 'nl' ? 'Dutch' : 'English';
     const extra = (pinkmilkExtra && String(pinkmilkExtra).trim()) || '—';
 
-    const prompt = `## Inspiration (anchors only — do not copy verbatim; use as sparks)
+    const prompt = `## Inspiration (anchors only — do not copy verbatim sparks only)
 
 1) Entertainment / news pulse (NL): **${news?.title || '—'}**
    Context: ${news?.summary || '—'}
@@ -69,23 +92,18 @@ Return ONLY valid JSON (no markdown, no commentary):
 
 Use ids "1" through "5".`;
 
-    const raw = await generateContent(
+    const raw = await callClaude(
         prompt,
         `${CONCEPT_SYSTEM} You return ONLY valid JSON objects. No markdown fences.`,
-        4096
+        4096,
     );
     const parsed = extractJson(raw);
     if (!parsed || !Array.isArray(parsed.cards) || parsed.cards.length < 5) {
-        throw new Error('Claude did not return 5 concept cards in expected JSON format.');
+        throw new Error('Claude gaf geen 5 concepten terug in JSON. Probeer opnieuw.');
     }
     return parsed.cards.slice(0, 5);
 }
 
-/**
- * @param {object} card one concept card with heading, sub_heading, body, intro_heading
- * @param {string} channel e.g. blog
- * @param {string} lang
- */
 export async function generateImagePromptsForChannel(card, channel, lang = 'nl') {
     const prompt = `Create image generation prompts for an AI image model (e.g. Midjourney / SDXL style).
 
@@ -108,14 +126,10 @@ Return ONLY valid JSON:
 If channel is not blog, still return main_image_prompt and sub_image_prompt (sub can support a carousel/split layout). Language of prompts: English (image models work best in English).
 Preferred content language context for the brief: ${lang === 'nl' ? 'Dutch' : 'English'}.`;
 
-    const raw = await generateContent(
-        prompt,
-        'You return ONLY valid JSON. No markdown.',
-        2048
-    );
+    const raw = await callClaude(prompt, 'You return ONLY valid JSON. No markdown.', 2048);
     const parsed = extractJson(raw);
     if (!parsed || typeof parsed.main_image_prompt !== 'string') {
-        throw new Error('Claude did not return image prompts in expected JSON format.');
+        throw new Error('Claude gaf geen geldige image prompts terug.');
     }
     return {
         main: parsed.main_image_prompt,
@@ -123,36 +137,4 @@ Preferred content language context for the brief: ${lang === 'nl' ? 'Dutch' : 'E
     };
 }
 
-export async function generateContent(
-    prompt,
-    systemPrompt = 'You are a social media expert.',
-    maxTokens = 2048
-) {
-    const apiKey = resolveAnthropicApiKey();
-    if (!apiKey) {
-        throw new Error(
-            'Anthropic API key missing. Add ANTHROPIC_API_KEY to your .env (recommended — same as Anthropic skills/docs), or VITE_ANTHROPIC_API_KEY / VITE_CLAUDE_API_KEY. Restart the dev server after changing .env. For Vercel, set the same variable(s) under Project → Environment Variables.'
-        );
-    }
-
-    const anthropic = new Anthropic({
-        apiKey,
-        dangerouslyAllowBrowser: true,
-    });
-
-    try {
-        const response = await anthropic.messages.create({
-            model: 'claude-sonnet-4-5-20250929',
-            max_tokens: maxTokens,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: prompt }],
-        });
-
-        return response.content[0].text;
-    } catch (error) {
-        console.error('Claude API Error:', error);
-        throw error;
-    }
-}
-
-export default { generateContent, generateIdeaConceptCards, generateImagePromptsForChannel };
+export default { generateIdeaConceptCards, generateImagePromptsForChannel };

@@ -3,7 +3,7 @@ module.exports = {
   root: true,
   env: { browser: true, es2022: true },
   globals: {
-    __PM_ANTHROPIC_API_KEY__: 'readonly',
+    __PM_ANTHROPIC_KEY__: 'readonly',
   },
   extends: ['eslint:recommended', 'plugin:react/recommended', 'plugin:react-hooks/recommended'],
   parserOptions: {

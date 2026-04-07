@@ -1,27 +1,26 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
+// Leest .env: ANTHROPIC_API_KEY of VITE_ANTHROPIC_API_KEY — één commando: npm run dev
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const resolvedAnthropicKey =
-    env.VITE_CLAUDE_API_KEY ||
-    env.VITE_ANTHROPIC_API_KEY ||
-    env.ANTHROPIC_API_KEY ||
+  const e = loadEnv(mode, process.cwd(), '')
+  const anthropicKey = (
+    e.ANTHROPIC_API_KEY ||
+    e.VITE_ANTHROPIC_API_KEY ||
+    e.VITE_CLAUDE_API_KEY ||
     ''
+  ).trim()
 
   return {
     plugins: [react()],
     define: {
-      // Standard Anthropic / skills env name works in .env; injected at build time for the client bundle.
-      __PM_ANTHROPIC_API_KEY__: JSON.stringify(resolvedAnthropicKey),
+      __PM_ANTHROPIC_KEY__: JSON.stringify(anthropicKey),
     },
     server: {
       headers: {
         'Cache-Control': 'no-store',
       },
       proxy: {
-        // Run `vercel dev` (default :3000) for `/api/*` during local development.
         '/api': {
           target: process.env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:3000',
           changeOrigin: true,
