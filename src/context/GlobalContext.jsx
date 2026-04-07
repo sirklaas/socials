@@ -6,7 +6,7 @@ const GlobalContext = createContext();
 export const defaultIdeaFlow = {
     newsTopics: [],
     socialTopics: [],
-    picks: { newsUrl: null, socialUrl: null },
+    picks: { newsUrl: null, socialUrl: null, pinkmilkId: null },
     conceptCards: [],
     selectedCardId: null,
     selectedChannel: 'blog',

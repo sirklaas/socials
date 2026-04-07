@@ -155,12 +155,9 @@ export function pickTopics(items, { excludeUrls = [], excludeTitles = [], count 
   return selected.slice(0, count);
 }
 
+/** First Concept column: entertainment headlines (single RSS, easy to swap). */
 export const NEWS_FEEDS = [
-  { url: 'https://feeds.nos.nl/nosnieuwsalgemeen', source: 'NOS', prefix: 'nos' },
-  { url: 'https://www.nu.nl/rss/Algemeen', source: 'nu.nl', prefix: 'nu' },
-  { url: 'https://www.ad.nl/home/rss.xml', source: 'AD', prefix: 'ad' },
-  { url: 'https://www.telegraaf.nl/rss', source: 'Telegraaf', prefix: 'teleg' },
-  { url: 'https://www.nrc.nl/rss/', source: 'NRC', prefix: 'nrc' },
+  { url: 'https://www.nu.nl/rss/Entertainment', source: 'nu.nl Entertainment', prefix: 'nu-ent' },
 ];
 
 /** Google Trends daily RSS for Netherlands (approximation for “social” trending). */

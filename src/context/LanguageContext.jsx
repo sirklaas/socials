@@ -147,7 +147,10 @@ const translations = {
         // Step 1 idea generator
         sourceNews: 'News NL',
         sourceSocial: 'Trending & social',
-        topicPickHint: 'Pick one topic per row.',
+        colTrendingNews: 'Entertainment news',
+        colTrendingSocial: 'Trending social topics',
+        colPinkmilkShows: 'Pink Milk shows',
+        topicPickHint: 'Pick one in each column.',
         regenerateTopics: 'Regenerate others',
         loadTopicsError: 'Could not load topics. Check API or run vercel dev for /api.',
         picksCompleteHint: 'All three picked — generate AI concept cards.',
@@ -174,7 +177,7 @@ const translations = {
         facebookLinkedNote: 'Facebook will mirror Instagram for this campaign.',
         step1InspirationTitle: 'Pick your inspiration',
         step1TopicFeedIntro:
-            'Three rows: Dutch news, trending searches, and Pink Milk. Each row has five cards — choose one per row, or regenerate the rest.',
+            'Three columns: pick one topic each. Then generate five AI concepts — they appear in one row below.',
 
         // Days
         mon: 'Mon',
@@ -331,7 +334,10 @@ const translations = {
         // Step 1 idea generator
         sourceNews: 'Nieuws NL',
         sourceSocial: 'Trending & social',
-        topicPickHint: 'Kies één topic per rij.',
+        colTrendingNews: 'Entertainment nieuws',
+        colTrendingSocial: 'Trending social topics',
+        colPinkmilkShows: 'Pink Milk shows',
+        topicPickHint: 'Kies één optie per kolom.',
         regenerateTopics: 'Anderen vernieuwen',
         loadTopicsError: 'Kon topics niet laden. Controleer API of start vercel dev voor /api.',
         picksCompleteHint: 'Alle drie gekozen — genereer AI-conceptkaarten.',
@@ -358,7 +364,7 @@ const translations = {
         facebookLinkedNote: 'Facebook wordt voor deze campagne meegezet met Instagram.',
         step1InspirationTitle: 'Kies je inspiratie',
         step1TopicFeedIntro:
-            'Drie rijen: Nederlands nieuws, trending zoekopdrachten, en Pink Milk. Elke rij heeft vijf kaarten — kies er één per rij, of vernieuw de anderen.',
+            'Drie kolommen: kies per kolom één topic. Genereer daarna vijf AI-concepten — die verschijnen in één rij eronder.',
 
         // Days
         mon: 'Ma',

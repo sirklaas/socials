@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
-    Lightbulb,
-    Sparkles,
     RefreshCw,
     Check,
     Wand2,
@@ -9,7 +7,6 @@ import {
     TrendingUp,
     Heart,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
@@ -33,11 +30,11 @@ const CHANNEL_DEFS = [
 ];
 
 const FALLBACK_NEWS = [
-    { id: 'fn-1', source: 'Demo', title: 'Nederland zet in op klimaat en energie', summary: 'Het kabinet presenteert plannen voor duurzame energie en verduurzaming van de gebouwde omgeving.\nMeer aandacht voor zon, wind en isolatie.\nBedrijven krijgen fiscale prikkels om sneller te vergroenen.', url: '#' },
-    { id: 'fn-2', source: 'Demo', title: 'Tech-sector groeit ondanks economische tweestrijd', summary: 'Scale-ups in AI en productiviteitstools blijven investeringen aantrekken.\nWerknemers zoeken scholing in digitale vaardigheden.\nHybride werken blijft de norm in kennissectoren.', url: '#' },
-    { id: 'fn-3', source: 'Demo', title: 'Onderwijs experimenteert met gepersonaliseerd leren', summary: 'Scholen piloten met software die leerlingtempo meet.\nDocenten krijgen meer tijd voor coaching.\nKritici vragen aandacht voor privacy en toetsing.', url: '#' },
-    { id: 'fn-4', source: 'Demo', title: 'Sport en welzijn: beweging op recept wint aan populariteit', summary: 'Huisartsen en fysiotherapeuten verwijzen vaker naar lokale sportprogramma’s.\nHet doel is langdurige gezondheidswinst.\nGemeenten investeren in buitensport.', url: '#' },
-    { id: 'fn-5', source: 'Demo', title: 'Cultureel erfgoed digitaliseert voor jong publiek', summary: 'Musea en archieven zetten AI-gestuurde tours en online archieven in.\nBezoekersaantallen bij online evenementen stijgen.\nEr blijft discussie over auteursrecht op scans.', url: '#' },
+    { id: 'fn-1', source: 'Demo', title: 'Streamingdienst kondigt nieuw NL-kijkersrecord aan', summary: 'Quoten pieken door docu-serie en live-evenement.\nSocial praat mee met hashtags en clips.', url: '#' },
+    { id: 'fn-2', source: 'Demo', title: 'Festivals plannen extra data voor 2026', summary: 'Meer podia en kindvriendelijke zones.\nKaartverkoop start volgende maand.', url: '#' },
+    { id: 'fn-3', source: 'Demo', title: 'Actrice deelt eerste beelden van speelfilm', summary: 'Teaser trekt miljoenen views.\nRelease in de zomer.', url: '#' },
+    { id: 'fn-4', source: 'Demo', title: 'Late night show nodigt cabaretier uit', summary: 'Fragment gaat viraal op short video.\nNieuwe aflevering komende vrijdag.', url: '#' },
+    { id: 'fn-5', source: 'Demo', title: 'Radio-hit stijgt naar nummer 1 in airplay-lijst', summary: 'Collaboratie tussen producer en zangeres.\nTourdata worden binnenkort bekend.', url: '#' },
 ];
 
 const FALLBACK_SOCIAL = [
@@ -48,84 +45,63 @@ const FALLBACK_SOCIAL = [
     { id: 'fs-5', source: 'Demo', title: 'Zoektrend: studiekeuze 2026', summary: 'Jongeren oriënteren zich op HBO en WO.\nOpen dagen en alternatieve leerroutes in beeld.\nOnderwijsmarketing piekt.', url: '#' },
 ];
 
-function TopicRow({ icon: Icon, title, radioGroup, topics, pickUrl, pickId, onPick, onRegenerate, disabledRegen, loading, t }) {
+function TopicColumn({
+    icon: Icon,
+    title,
+    radioGroup,
+    topics,
+    pickUrl,
+    pickId,
+    onPick,
+    onRegenerate,
+    disabledRegen,
+    loading,
+    t,
+}) {
     return (
-        <div style={{ marginBottom: 'var(--space-xl)' }}>
-            <h4
-                className="font-heading"
-                style={{
-                    fontSize: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    marginBottom: 'var(--space-md)',
-                    color: 'var(--slate-950)',
-                }}
-            >
-                {Icon && <Icon size={18} style={{ color: 'var(--primary)' }} />}
-                {title}
-            </h4>
-            <p className="text-caption text-muted" style={{ marginBottom: 'var(--space-sm)' }}>
-                {t('topicPickHint')}
-            </p>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: 'var(--space-md)',
-                }}
-            >
+        <div className="concept-topic-col">
+            <div className="concept-topic-col__head">
+                {Icon && <Icon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
+                <span>{title}</span>
+            </div>
+            <div className="concept-topic-col__list">
                 {loading
                     ? [1, 2, 3, 4, 5].map((i) => (
-                          <div key={i} className="card" style={{ minHeight: '120px', opacity: 0.5 }} />
+                          <div key={i} className="skeleton" style={{ height: 48, marginBottom: 4 }} />
                       ))
                     : topics.map((topic) => {
                           const sel = pickUrl ? topic.url === pickUrl : topic.id === pickId;
                           return (
                               <label
-                                  key={topic.id + topic.url}
-                                  className={`card ${sel ? 'selected' : ''}`}
-                                  style={{
-                                      cursor: 'pointer',
-                                      padding: 'var(--space-md)',
-                                      display: 'flex',
-                                      gap: '10px',
-                                      alignItems: 'flex-start',
-                                      border: sel ? '2px solid var(--primary)' : undefined,
-                                  }}
+                                  key={topic.id + String(topic.url)}
+                                  className={`concept-topic-option${sel ? ' concept-topic-option--selected' : ''}`}
                               >
                                   <input
                                       type="radio"
                                       name={radioGroup}
                                       checked={sel}
                                       onChange={() => onPick(topic)}
-                                      style={{ marginTop: '4px' }}
                                   />
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                      <p className="text-caption text-muted" style={{ marginBottom: '4px' }}>
-                                          {topic.source}
-                                      </p>
-                                      <p className="text-small font-medium" style={{ marginBottom: '6px', lineHeight: 1.35 }}>
-                                          {topic.title}
-                                      </p>
-                                      <p className="text-caption text-muted" style={{ lineHeight: 1.45, whiteSpace: 'pre-line' }}>
-                                          {topic.summary}
-                                      </p>
+                                  <div className="concept-topic-option__body">
+                                      <div className="concept-topic-option__src">{topic.source}</div>
+                                      <div className="concept-topic-option__title">{topic.title}</div>
                                   </div>
                               </label>
                           );
                       })}
             </div>
-            <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                style={{ marginTop: 'var(--space-md)' }}
-                onClick={onRegenerate}
-                disabled={loading || disabledRegen}
-            >
-                <RefreshCw size={14} className={loading ? 'spinner' : ''} />
-                {t('regenerateTopics')}
-            </button>
+            <div className="concept-topic-col__actions">
+                <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ width: '100%' }}
+                    onClick={onRegenerate}
+                    disabled={loading || disabledRegen}
+                >
+                    <RefreshCw size={12} className={loading ? 'icon-spin' : ''} />
+                    {t('regenerateTopics')}
+                </button>
+            </div>
         </div>
     );
 }
@@ -138,10 +114,6 @@ export default function ConceptStep() {
     const [loadNews, setLoadNews] = useState(false);
     const [loadSocial, setLoadSocial] = useState(false);
     const [loadPm, setLoadPm] = useState(false);
-    const [errNews, setErrNews] = useState(null);
-    const [errSocial, setErrSocial] = useState(null);
-    const [errPm, setErrPm] = useState(null);
-
     const [genCards, setGenCards] = useState(false);
     const [genImg, setGenImg] = useState(false);
     const [claudeErr, setClaudeErr] = useState(null);
@@ -151,9 +123,6 @@ export default function ConceptStep() {
         if (loadInProgress.current) return;
         loadInProgress.current = true;
         try {
-            setErrNews(null);
-            setErrSocial(null);
-            setErrPm(null);
             setLoadNews(true);
             setLoadSocial(true);
             setLoadPm(true);
@@ -164,11 +133,9 @@ export default function ConceptStep() {
                     updateIdeaFlow({ newsTopics: newsRes.topics });
                 } else {
                     updateIdeaFlow({ newsTopics: FALLBACK_NEWS });
-                    setErrNews('fallback');
                 }
             } catch {
                 updateIdeaFlow({ newsTopics: FALLBACK_NEWS });
-                setErrNews('fallback');
             } finally {
                 setLoadNews(false);
             }
@@ -179,11 +146,9 @@ export default function ConceptStep() {
                     updateIdeaFlow({ socialTopics: socRes.topics });
                 } else {
                     updateIdeaFlow({ socialTopics: FALLBACK_SOCIAL });
-                    setErrSocial('fallback');
                 }
             } catch {
                 updateIdeaFlow({ socialTopics: FALLBACK_SOCIAL });
-                setErrSocial('fallback');
             } finally {
                 setLoadSocial(false);
             }
@@ -199,16 +164,12 @@ export default function ConceptStep() {
                     pinkmilkCandidates: candidates,
                     pinkmilkTopics: five,
                 });
-                if (!raw?.ok || !raw.data) {
-                    setErrPm('fallback');
-                }
             } catch {
                 const candidates = extractPinkMilkCandidates({});
                 updateIdeaFlow({
                     pinkmilkCandidates: candidates,
                     pinkmilkTopics: pickPinkMilkTopics(candidates, { count: 5 }),
                 });
-                setErrPm('fallback');
             } finally {
                 setLoadPm(false);
             }
@@ -230,7 +191,6 @@ export default function ConceptStep() {
         const selectedUrl = idea.picks?.newsUrl;
         const excludeUrls = idea.newsTopics.filter((x) => x.url !== selectedUrl).map((x) => x.url);
         setLoadNews(true);
-        setErrNews(null);
         try {
             const res = await fetchNewsTopics({
                 excludeUrls,
@@ -241,7 +201,7 @@ export default function ConceptStep() {
                 updateIdeaFlow({ newsTopics: res.topics });
             }
         } catch {
-            setErrNews('err');
+            /* keep existing topics */
         } finally {
             setLoadNews(false);
         }
@@ -251,7 +211,6 @@ export default function ConceptStep() {
         const selectedUrl = idea.picks?.socialUrl;
         const excludeUrls = idea.socialTopics.filter((x) => x.url !== selectedUrl).map((x) => x.url);
         setLoadSocial(true);
-        setErrSocial(null);
         try {
             const res = await fetchSocialTopics({
                 excludeUrls,
@@ -262,7 +221,7 @@ export default function ConceptStep() {
                 updateIdeaFlow({ socialTopics: res.topics });
             }
         } catch {
-            setErrSocial('err');
+            /* keep existing topics */
         } finally {
             setLoadSocial(false);
         }
@@ -284,6 +243,7 @@ export default function ConceptStep() {
     const pmPick = idea.pinkmilkTopics?.find((x) => x.id === idea.picks?.pinkmilkId);
 
     const allPicked = !!(newsPick && socialPick && pmPick);
+    const hasCards = (idea.conceptCards?.length ?? 0) > 0;
 
     const handleGenCards = async () => {
         if (!allPicked) return;
@@ -356,177 +316,110 @@ export default function ConceptStep() {
     };
 
     return (
-        <div className="container-grid cols-1-2" style={{ height: '100%', alignItems: 'stretch' }}>
-            <div className="content-container">
-                <div className="container-header">
-                    <h3 className="container-title">
-                        <Lightbulb size={20} style={{ color: 'var(--accent-amber)' }} />
-                        {t('step1InspirationTitle')}
-                    </h3>
-                </div>
-                <div className="container-body">
-                    <p className="text-small text-muted" style={{ marginBottom: 'var(--space-lg)' }}>
-                        {t('step1TopicFeedIntro')}
-                    </p>
-                    {(errNews || errSocial || errPm) && (
-                        <p className="text-caption text-muted" style={{ marginBottom: 'var(--space-md)' }}>
-                            {t('loadTopicsError')}
-                        </p>
-                    )}
-                    <TopicRow
-                        icon={Newspaper}
-                        radioGroup="idea-news"
-                        title={t('sourceNews')}
-                        topics={idea.newsTopics || []}
-                        pickUrl={idea.picks?.newsUrl}
-                        onPick={(topic) =>
-                            updateIdeaFlow({ picks: { ...idea.picks, newsUrl: topic.url } })
-                        }
-                        onRegenerate={regenNews}
-                        disabledRegen={false}
-                        loading={loadNews}
-                        t={t}
-                    />
-                    <TopicRow
-                        icon={TrendingUp}
-                        radioGroup="idea-social"
-                        title={t('sourceSocial')}
-                        topics={idea.socialTopics || []}
-                        pickUrl={idea.picks?.socialUrl}
-                        onPick={(topic) =>
-                            updateIdeaFlow({ picks: { ...idea.picks, socialUrl: topic.url } })
-                        }
-                        onRegenerate={regenSocial}
-                        disabledRegen={false}
-                        loading={loadSocial}
-                        t={t}
-                    />
-                    <TopicRow
-                        icon={Heart}
-                        radioGroup="idea-pinkmilk"
-                        title={t('sourcePinkmilk')}
-                        topics={idea.pinkmilkTopics || []}
-                        pickId={idea.picks?.pinkmilkId}
-                        onPick={(topic) =>
-                            updateIdeaFlow({ picks: { ...idea.picks, pinkmilkId: topic.id } })
-                        }
-                        onRegenerate={regenPinkmilk}
-                        disabledRegen={false}
-                        loading={loadPm}
-                        t={t}
-                    />
-                    {allPicked && (
-                        <div style={{ paddingTop: 'var(--space-md)', borderTop: '1px solid var(--slate-100)' }}>
-                            <p className="text-small text-muted" style={{ marginBottom: 'var(--space-md)' }}>
-                                {t('picksCompleteHint')}
-                            </p>
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={handleGenCards}
-                                disabled={genCards}
-                            >
-                                {genCards ? (
-                                    <RefreshCw size={18} className="spinner" />
-                                ) : (
-                                    <Wand2 size={18} />
-                                )}
-                                {t('generateAiCards')}
-                            </button>
-                        </div>
-                    )}
-                </div>
+        <div className="concept-step">
+            <div className="concept-step__cols">
+                <TopicColumn
+                    icon={Newspaper}
+                    radioGroup="idea-news"
+                    title={t('colTrendingNews')}
+                    topics={idea.newsTopics || []}
+                    pickUrl={idea.picks?.newsUrl}
+                    onPick={(topic) =>
+                        updateIdeaFlow({ picks: { ...idea.picks, newsUrl: topic.url } })
+                    }
+                    onRegenerate={regenNews}
+                    disabledRegen={false}
+                    loading={loadNews}
+                    t={t}
+                />
+                <TopicColumn
+                    icon={TrendingUp}
+                    radioGroup="idea-social"
+                    title={t('colTrendingSocial')}
+                    topics={idea.socialTopics || []}
+                    pickUrl={idea.picks?.socialUrl}
+                    onPick={(topic) =>
+                        updateIdeaFlow({ picks: { ...idea.picks, socialUrl: topic.url } })
+                    }
+                    onRegenerate={regenSocial}
+                    disabledRegen={false}
+                    loading={loadSocial}
+                    t={t}
+                />
+                <TopicColumn
+                    icon={Heart}
+                    radioGroup="idea-pinkmilk"
+                    title={t('colPinkmilkShows')}
+                    topics={idea.pinkmilkTopics || []}
+                    pickId={idea.picks?.pinkmilkId}
+                    onPick={(topic) =>
+                        updateIdeaFlow({ picks: { ...idea.picks, pinkmilkId: topic.id } })
+                    }
+                    onRegenerate={regenPinkmilk}
+                    disabledRegen={false}
+                    loading={loadPm}
+                    t={t}
+                />
             </div>
 
-            <div className="content-container">
-                <div className="container-header">
-                    <h3 className="container-title">
-                        <Sparkles size={20} style={{ color: 'var(--accent-purple)' }} />
-                        {t('aiConceptCards')}
-                    </h3>
-                    {idea.conceptCards?.length > 0 && (
-                        <span className="badge badge-ai">{t('aiGenerated')}</span>
-                    )}
+            {allPicked && (
+                <div className="concept-step__genbar">
+                    <button type="button" className="btn btn-primary btn-sm" onClick={handleGenCards} disabled={genCards}>
+                        {genCards ? <RefreshCw size={14} className="icon-spin" /> : <Wand2 size={14} />}
+                        {t('generateAiCards')}
+                    </button>
                 </div>
-                <div className="container-body">
-                    {claudeErr && (
-                        <div
-                            style={{
-                                padding: 'var(--space-md)',
-                                background: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid var(--error)',
-                                borderRadius: '8px',
-                                color: 'var(--error)',
-                                marginBottom: 'var(--space-md)',
-                                fontSize: '14px',
-                            }}
-                        >
-                            {claudeErr}
-                        </div>
-                    )}
+            )}
 
-                    <p className="text-caption text-muted" style={{ marginBottom: 'var(--space-md)' }}>
-                        {t('pickOneCard')}
-                    </p>
+            {claudeErr && (
+                <div
+                    style={{
+                        padding: '8px 10px',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid var(--error)',
+                        borderRadius: '8px',
+                        color: 'var(--error)',
+                        fontSize: '12px',
+                    }}
+                >
+                    {claudeErr}
+                </div>
+            )}
 
-                    {idea.conceptCards?.length > 0 ? (
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                                gap: 'var(--space-md)',
-                            }}
-                        >
-                            {idea.conceptCards.map((c) => {
-                                const sel = String(idea.selectedCardId) === String(c.id);
-                                return (
-                                    <motion.div
-                                        key={c.id}
-                                        layout
-                                        className={`card ${sel ? 'selected' : ''}`}
-                                        style={{
-                                            cursor: 'pointer',
-                                            padding: 'var(--space-md)',
-                                            border: sel ? '2px solid var(--primary)' : undefined,
-                                        }}
-                                        onClick={() =>
-                                            updateIdeaFlow({
-                                                selectedCardId: String(c.id),
-                                                imagePrompts: null,
-                                            })
-                                        }
-                                    >
-                                        <p className="text-caption" style={{ color: 'var(--accent-purple)' }}>
-                                            {c.intro_heading}
-                                        </p>
-                                        <h5 className="text-small font-medium" style={{ margin: '8px 0' }}>
-                                            {c.heading}
-                                        </h5>
-                                        <p className="text-caption text-muted" style={{ marginBottom: '8px' }}>
-                                            {c.sub_heading}
-                                        </p>
-                                        <p className="text-caption" style={{ lineHeight: 1.45, whiteSpace: 'pre-line' }}>
-                                            {(c.body || '').slice(0, 320)}
-                                            {(c.body || '').length > 320 ? '…' : ''}
-                                        </p>
-                                        {sel && (
-                                            <div style={{ marginTop: '8px', color: 'var(--primary)' }}>
-                                                <Check size={16} />
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="text-muted text-small" style={{ padding: 'var(--space-xl)' }}>
-                            {t('noConceptsDesc')}
-                        </div>
-                    )}
+            {hasCards && (
+                <div className="concept-step__ai-wrap">
+                    <div className="concept-step__ai-row">
+                        {idea.conceptCards.map((c) => {
+                            const sel = String(idea.selectedCardId) === String(c.id);
+                            return (
+                                <button
+                                    type="button"
+                                    key={c.id}
+                                    className={`concept-ai-card${sel ? ' selected' : ''}`}
+                                    onClick={() =>
+                                        updateIdeaFlow({
+                                            selectedCardId: String(c.id),
+                                            imagePrompts: null,
+                                        })
+                                    }
+                                >
+                                    <div className="concept-ai-card__intro">{c.intro_heading}</div>
+                                    <div className="concept-ai-card__heading">{c.heading}</div>
+                                    <div className="concept-ai-card__sub">{c.sub_heading}</div>
+                                    <div className="concept-ai-card__body">{c.body || ''}</div>
+                                    {sel && (
+                                        <div style={{ marginTop: 'auto', paddingTop: 4, color: 'var(--primary)' }}>
+                                            <Check size={14} />
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                    <div style={{ marginTop: 'var(--space-xl)' }}>
-                        <label className="label">{t('channelTitle')}</label>
-                        <div className="flex gap-sm" style={{ flexWrap: 'wrap', marginBottom: 'var(--space-sm)' }}>
+                    <div className="concept-step__toolbar">
+                        <span className="label">{t('channelTitle')}</span>
+                        <div className="concept-step__pills">
                             {CHANNEL_DEFS.map((ch) => (
                                 <button
                                     key={ch.id}
@@ -538,65 +431,31 @@ export default function ConceptStep() {
                                 </button>
                             ))}
                         </div>
-                        {idea.facebookLinkedFromInsta && (
-                            <p className="text-caption text-muted">{t('facebookLinkedNote')}</p>
-                        )}
-                    </div>
-
-                    {selectedCard && (
-                        <div style={{ marginTop: 'var(--space-lg)' }}>
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={handleGenImages}
-                                disabled={genImg}
-                            >
-                                {genImg ? <RefreshCw size={16} className="spinner" /> : <Wand2 size={16} />}
+                        {selectedCard && (
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={handleGenImages} disabled={genImg}>
+                                {genImg ? <RefreshCw size={12} className="icon-spin" /> : <Wand2 size={12} />}
                                 {t('genImagePrompts')}
                             </button>
-                        </div>
-                    )}
-
-                    {idea.imagePrompts && (
-                        <div
-                            style={{
-                                marginTop: 'var(--space-lg)',
-                                padding: 'var(--space-md)',
-                                background: 'var(--slate-50)',
-                                borderRadius: '8px',
-                            }}
+                        )}
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            disabled={!selectedCard || (idea.selectedChannel || 'blog') !== 'blog' || !idea.imagePrompts}
+                            onClick={handleConfirm}
                         >
-                            <p className="label" style={{ marginBottom: '8px' }}>
-                                {t('imagePromptsTitle')}
-                            </p>
-                            <p className="text-caption text-muted">{t('imagePromptMain')}</p>
-                            <p className="text-small" style={{ marginBottom: 'var(--space-md)', whiteSpace: 'pre-wrap' }}>
-                                {idea.imagePrompts.main}
-                            </p>
-                            <p className="text-caption text-muted">{t('imagePromptSub')}</p>
-                            <p className="text-small" style={{ whiteSpace: 'pre-wrap' }}>
-                                {idea.imagePrompts.sub}
-                            </p>
+                            {t('confirmStep1')}
+                        </button>
+                    </div>
+                    {idea.imagePrompts && (
+                        <div className="concept-step__prompts">
+                            <strong>{t('imagePromptMain')}</strong> {idea.imagePrompts.main}
+                            <br />
+                            <strong>{t('imagePromptSub')}</strong> {idea.imagePrompts.sub}
                         </div>
                     )}
                 </div>
-                <div className="container-footer">
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        disabled={!selectedCard || (idea.selectedChannel || 'blog') !== 'blog' || !idea.imagePrompts}
-                        onClick={handleConfirm}
-                        style={{
-                            opacity:
-                                !selectedCard || (idea.selectedChannel || 'blog') !== 'blog' || !idea.imagePrompts
-                                    ? 0.5
-                                    : 1,
-                        }}
-                    >
-                        {t('confirmStep1')}
-                    </button>
-                </div>
-            </div>
+            )}
+
         </div>
     );
 }
