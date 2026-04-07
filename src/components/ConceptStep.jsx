@@ -63,13 +63,25 @@ function TopicColumn({
     return (
         <div className="concept-topic-col">
             <div className="concept-topic-col__head">
-                {Icon && <Icon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
-                <span>{title}</span>
+                <div className="concept-topic-col__head-main">
+                    {Icon && <Icon size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />}
+                    <span className="concept-topic-col__title">{title}</span>
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-secondary btn-sm concept-topic-col__refresh"
+                    onClick={onRegenerate}
+                    disabled={loading || disabledRegen}
+                    title={t('regenerateTopics')}
+                >
+                    <RefreshCw size={12} className={loading ? 'icon-spin' : ''} />
+                    <span>{t('regenerateTopicsCompact')}</span>
+                </button>
             </div>
             <div className="concept-topic-col__list">
                 {loading
                     ? [1, 2, 3, 4, 5].map((i) => (
-                          <div key={i} className="skeleton" style={{ height: 48, marginBottom: 4 }} />
+                          <div key={i} className="skeleton" style={{ height: 36, marginBottom: 3 }} />
                       ))
                     : topics.map((topic) => {
                           const sel = pickUrl ? topic.url === pickUrl : topic.id === pickId;
@@ -93,18 +105,6 @@ function TopicColumn({
                       })}
             </div>
             {belowList}
-            <div className="concept-topic-col__actions">
-                <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    style={{ width: '100%' }}
-                    onClick={onRegenerate}
-                    disabled={loading || disabledRegen}
-                >
-                    <RefreshCw size={12} className={loading ? 'icon-spin' : ''} />
-                    {t('regenerateTopics')}
-                </button>
-            </div>
         </div>
     );
 }
@@ -391,7 +391,7 @@ export default function ConceptStep() {
                                 id="pinkmilk-extra"
                                 className="textarea"
                                 rows={2}
-                                style={{ minHeight: 52, fontSize: 12, padding: '8px 10px', resize: 'vertical' }}
+                                style={{ minHeight: 44, fontSize: 11, padding: '6px 8px', resize: 'none' }}
                                 placeholder={t('pinkmilkExtraPlaceholder')}
                                 value={idea.pinkmilkExtra ?? ''}
                                 onChange={(e) => updateIdeaFlow({ pinkmilkExtra: e.target.value })}

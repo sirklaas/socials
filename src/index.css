@@ -653,7 +653,7 @@ h6 {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .concept-step__lower {
@@ -699,6 +699,7 @@ h6 {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 6px;
     padding: 6px 8px;
     font-family: var(--font-heading);
@@ -709,19 +710,44 @@ h6 {
     background: var(--white);
 }
 
+.concept-topic-col__head-main {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+}
+
+.concept-topic-col__title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.concept-topic-col__refresh {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
 .concept-topic-col__list {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
-    padding: 4px 6px 6px;
+    overflow: hidden;
+    padding: 4px 6px 4px;
 }
 
 .concept-topic-option {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    padding: 6px 6px;
-    margin-bottom: 2px;
+    gap: 6px;
+    padding: 4px 6px;
+    margin-bottom: 1px;
     border-radius: 6px;
     cursor: pointer;
     border: 1px solid transparent;
@@ -756,21 +782,14 @@ h6 {
 }
 
 .concept-topic-option__title {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.25;
     color: var(--slate-950);
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
-}
-
-.concept-topic-col__actions {
-    flex: 0 0 auto;
-    padding: 6px 8px;
-    border-top: 1px solid var(--slate-200);
-    background: var(--white);
 }
 
 .concept-step__genbar {
@@ -793,12 +812,12 @@ h6 {
 
 .concept-step__ai-row {
     flex: 1 1 0;
-    min-height: clamp(200px, 32vh, 520px);
+    min-height: 0;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     align-items: stretch;
-    overflow: auto;
+    overflow: hidden;
 }
 
 .concept-ai-card {
@@ -806,7 +825,7 @@ h6 {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 10px 10px 8px;
+    padding: 8px 8px 6px;
     border-radius: 10px;
     border: 1px solid var(--slate-200);
     background: var(--white);
@@ -826,28 +845,28 @@ h6 {
 }
 
 .concept-ai-card__intro {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--accent-purple);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     line-height: 1.25;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
 .concept-ai-card__heading {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     font-family: var(--font-heading);
-    line-height: 1.25;
+    line-height: 1.2;
     color: var(--slate-950);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -864,14 +883,16 @@ h6 {
 }
 
 .concept-ai-card__body {
-    font-size: 11px;
-    line-height: 1.4;
+    font-size: 10px;
+    line-height: 1.35;
     color: var(--slate-700);
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
-    padding-right: 2px;
-    white-space: pre-line;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 12;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
 }
 
 .concept-step__toolbar {
@@ -903,20 +924,26 @@ h6 {
 }
 
 .concept-step__prompts {
-    font-size: 11px;
+    font-size: 10px;
     flex: 0 1 auto;
-    max-height: 32%;
+    max-height: 5.5rem;
     min-height: 0;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 6px 8px;
     background: var(--slate-50);
     border-radius: 6px;
     margin-top: 4px;
+    line-height: 1.35;
 }
 
 .concept-step .btn-sm {
     padding: 6px 12px;
     font-size: 12px;
+}
+
+.concept-step .concept-topic-col__refresh.btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
 }
 
 /* Visual step — three Claude prompt variants */
