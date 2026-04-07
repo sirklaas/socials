@@ -13,8 +13,8 @@ import {
     generateIdeaConceptCards,
     generateImagePromptsForChannel,
 } from '../services/claude';
-import { fetchNewsTopics, fetchSocialTopics, fetchPinkmilkRaw } from '../services/topicSources';
-import { extractPinkMilkCandidates, pickPinkMilkTopics } from '../services/pinkmilkTopics';
+import { fetchNewsTopics, fetchSocialTopics } from '../services/topicSources';
+import { pickRandomPinkMilkShows } from '../services/pinkmilkShows';
 
 const CHANNEL_DEFS = [
     { id: 'blog', labelKey: 'chBlog', insta: false },
@@ -38,11 +38,11 @@ const FALLBACK_NEWS = [
 ];
 
 const FALLBACK_SOCIAL = [
-    { id: 'fs-1', source: 'Demo', title: 'Zoektrend: elektrische fiets leasing', summary: 'Veel zoekvolume rond leaseconstructies en subsidies.\nTrending in heel Nederland.\nRelevant voor mobiliteit en duurzaamheid.', url: '#' },
-    { id: 'fs-2', source: 'Demo', title: 'Zoektrend: AI voor kleine ondernemers', summary: 'Stijgende interesse in betaalbare AI-tools.\nContent rond tutorials en workflows.\nGericht op zzp en MKB.', url: '#' },
-    { id: 'fs-3', source: 'Demo', title: 'Zoektrend: gezonde meal prep', summary: 'Korte video’s over voorbereiden van maaltijden gaan viel.\nFocus op tijdsbesparing en voeding.\nPast bij lifestyle en welzijn.', url: '#' },
-    { id: 'fs-4', source: 'Demo', title: 'Zoektrend: kamperen met kids', summary: 'Seizoenspieken in zoekgedrag naar routes en gear.\nFamiliecontent en reviews populair.\nKans voor travel en outdoor merken.', url: '#' },
-    { id: 'fs-5', source: 'Demo', title: 'Zoektrend: studiekeuze 2026', summary: 'Jongeren oriënteren zich op HBO en WO.\nOpen dagen en alternatieve leerroutes in beeld.\nOnderwijsmarketing piekt.', url: '#' },
+    { id: 'fs-1', source: 'Demo', title: 'YouTube trending: trailer nieuwe speelfilm', summary: 'Trailer trekt views in NL.\nReaction- en breakdown-content volgt.', url: '#fs-1' },
+    { id: 'fs-2', source: 'Demo', title: 'YouTube trending: festival-aftermovie', summary: 'Highlights en backstage clips.\nMuziek en experience merken.', url: '#fs-2' },
+    { id: 'fs-3', source: 'Demo', title: 'YouTube trending: challenge-video', summary: 'Korte format met duel tussen creators.\nDuets en stitches op andere platforms.', url: '#fs-3' },
+    { id: 'fs-4', source: 'Demo', title: 'YouTube trending: tech-unboxing', summary: 'Gadget-release met live Q&A.\nCommentsectie stuurt koopbeslissingen.', url: '#fs-4' },
+    { id: 'fs-5', source: 'Demo', title: 'YouTube trending: podcast-clip', summary: 'Fragment gaat viral.\nLangere aflevering in beschrijving gelinkt.', url: '#fs-5' },
 ];
 
 function TopicColumn({
@@ -57,6 +57,7 @@ function TopicColumn({
     disabledRegen,
     loading,
     t,
+    belowList = null,
 }) {
     return (
         <div className="concept-topic-col">
@@ -90,6 +91,7 @@ function TopicColumn({
                           );
                       })}
             </div>
+            {belowList}
             <div className="concept-topic-col__actions">
                 <button
                     type="button"
@@ -154,21 +156,8 @@ export default function ConceptStep() {
             }
 
             try {
-                const raw = await fetchPinkmilkRaw();
-                const candidates =
-                    raw?.ok && raw.data && typeof raw.data === 'object'
-                        ? extractPinkMilkCandidates(raw.data)
-                        : extractPinkMilkCandidates({});
-                const five = pickPinkMilkTopics(candidates, { count: 5 });
                 updateIdeaFlow({
-                    pinkmilkCandidates: candidates,
-                    pinkmilkTopics: five,
-                });
-            } catch {
-                const candidates = extractPinkMilkCandidates({});
-                updateIdeaFlow({
-                    pinkmilkCandidates: candidates,
-                    pinkmilkTopics: pickPinkMilkTopics(candidates, { count: 5 }),
+                    pinkmilkTopics: pickRandomPinkMilkShows({ count: 5 }),
                 });
             } finally {
                 setLoadPm(false);
@@ -230,12 +219,9 @@ export default function ConceptStep() {
     const regenPinkmilk = () => {
         const selectedId = idea.picks?.pinkmilkId;
         const excludeIds = idea.pinkmilkTopics.filter((x) => x.id !== selectedId).map((x) => x.id);
-        const candidates =
-            idea.pinkmilkCandidates?.length > 0
-                ? idea.pinkmilkCandidates
-                : extractPinkMilkCandidates({});
-        const next = pickPinkMilkTopics(candidates, { selectedId, excludeIds, count: 5 });
-        updateIdeaFlow({ pinkmilkTopics: next });
+        updateIdeaFlow({
+            pinkmilkTopics: pickRandomPinkMilkShows({ selectedId, excludeIds, count: 5 }),
+        });
     };
 
     const newsPick = idea.newsTopics?.find((x) => x.url === idea.picks?.newsUrl);
@@ -255,6 +241,7 @@ export default function ConceptStep() {
                     news: newsPick,
                     social: socialPick,
                     pinkmilk: pmPick,
+                    pinkmilkExtra: idea.pinkmilkExtra || '',
                 },
                 language === 'nl' ? 'nl' : 'en'
             );
@@ -359,6 +346,28 @@ export default function ConceptStep() {
                     disabledRegen={false}
                     loading={loadPm}
                     t={t}
+                    belowList={
+                        <div
+                            style={{
+                                padding: '6px 8px',
+                                borderTop: '1px solid var(--slate-200)',
+                                background: 'var(--white)',
+                            }}
+                        >
+                            <label className="text-caption text-muted" htmlFor="pinkmilk-extra" style={{ display: 'block', marginBottom: 4 }}>
+                                {t('pinkmilkExtraLabel')}
+                            </label>
+                            <textarea
+                                id="pinkmilk-extra"
+                                className="textarea"
+                                rows={2}
+                                style={{ minHeight: 52, fontSize: 12, padding: '8px 10px', resize: 'vertical' }}
+                                placeholder={t('pinkmilkExtraPlaceholder')}
+                                value={idea.pinkmilkExtra ?? ''}
+                                onChange={(e) => updateIdeaFlow({ pinkmilkExtra: e.target.value })}
+                            />
+                        </div>
+                    }
                 />
             </div>
 

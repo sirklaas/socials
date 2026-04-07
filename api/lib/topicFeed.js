@@ -1,10 +1,15 @@
 import crypto from 'node:crypto';
 import Parser from 'rss-parser';
 
+const FETCH_HEADERS = {
+  'User-Agent': 'PinkMilkSocialEngine/1.0 (topic aggregator)',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+};
+
 const parser = new Parser({
   timeout: 12000,
   headers: {
-    'User-Agent': 'PinkMilkSocialEngine/1.0 (topic aggregator)',
+    'User-Agent': FETCH_HEADERS['User-Agent'],
     Accept: 'application/rss+xml, application/xml, text/xml, */*',
   },
 });
@@ -83,6 +88,58 @@ export function normalizeRssItem(idPrefix, sourceLabel, item) {
     summary: summary || title,
     url,
   };
+}
+
+/** Netherlands YouTube trending list (youtube.trends24.in) — HTML scrape, same idea as NU entertainment RSS. */
+const YOUTUBE_TRENDS24_NL = 'https://youtube.trends24.in/netherlands/';
+
+function decodeBasicEntities(s) {
+  return String(s)
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+/**
+ * @returns {Promise<Array<{ id: string, source: string, title: string, summary: string, url: string }>>}
+ */
+export async function fetchYoutubeTrends24NL(sourceLabel = 'YouTube NL (Trends24)', idPrefix = 'yt24') {
+  try {
+    const res = await fetch(YOUTUBE_TRENDS24_NL, {
+      headers: FETCH_HEADERS,
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) {
+      console.error('YouTube Trends24 NL HTTP', res.status);
+      return [];
+    }
+    const html = await res.text();
+    const ol = html.match(/<ol aria-labelledby=group-all class=video-list>([\s\S]*?)<\/ol>/i);
+    if (!ol) {
+      console.error('YouTube Trends24 NL: no video-list ol found');
+      return [];
+    }
+    const block = ol[1];
+    const re =
+      /<a href="(https:\/\/(?:www\.)?youtube\.com\/watch\?v=[^"]+)" class=video-link[\s\S]*?<h4 class=vc-title>([^<]*)<\/h4>/gi;
+    const out = [];
+    let match;
+    while ((match = re.exec(block)) !== null) {
+      const url = match[1].replace(/^https:\/\/youtube\.com\//, 'https://www.youtube.com/');
+      const title = decodeBasicEntities(match[2]).trim().slice(0, 200);
+      if (!title) continue;
+      if (isDeniedTopic(title)) continue;
+      const id = `${idPrefix}-${crypto.createHash('sha256').update(`${url}|${title}`).digest('hex').slice(0, 16)}`;
+      const summary = linesFromText(`${title}. Trending YouTube video in Netherlands (youtube.trends24.in).`, 4, 400);
+      out.push({ id, source: sourceLabel, title, summary: summary || title, url });
+    }
+    return out;
+  } catch (e) {
+    console.error('YouTube Trends24 NL fetch failed:', e.message);
+    return [];
+  }
 }
 
 export async function fetchFeedItems(feedUrl, sourceLabel, idPrefix) {

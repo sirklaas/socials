@@ -13,17 +13,20 @@ const anthropic = new Anthropic({
  * @param {string} lang 'nl' | 'en'
  */
 export async function generateIdeaConceptCards(selections, lang = 'nl') {
-    const { news, social } = selections;
+    const { news, social, pinkmilk, pinkmilkExtra } = selections;
     const langName = lang === 'nl' ? 'Dutch' : 'English';
+    const extra = (pinkmilkExtra && String(pinkmilkExtra).trim()) || '—';
 
     const prompt = `You are a content strategist for Pink Milk (creator / video / social brand).
 
-The user selected these two inspiration topics:
+The user selected these inspiration topics:
 
-1) NEWS (mainstream Netherlands): Title: ${news?.title || '—'} — ${news?.summary || ''}
-2) TRENDING / SOCIAL interest: Title: ${social?.title || '—'} — ${social?.summary || ''}
+1) NEWS / entertainment headlines (Netherlands): Title: ${news?.title || '—'} — ${news?.summary || ''}
+2) TRENDING (e.g. YouTube / social NL): Title: ${social?.title || '—'} — ${social?.summary || ''}
+3) PINK MILK show / format to lean into: ${pinkmilk?.title || '—'} — ${pinkmilk?.summary || ''}
+4) User's own note (optional, use if not "—"): ${extra}
 
-Generate exactly 5 distinct content concept cards that could become a blog or social post. Combine angles from both sources where natural. Avoid war, graphic violence, or crime-heavy angles.
+Generate exactly 5 distinct content concept cards that could become a blog or social post. Tie ideas to the chosen show format where it fits; blend news + trending + optional note. Avoid war, graphic violence, or crime-heavy angles.
 
 Return ONLY valid JSON with this shape (no markdown, no extra text):
 {

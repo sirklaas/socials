@@ -1,5 +1,12 @@
 import { buffer } from 'node:stream/consumers';
-import { SOCIAL_FEEDS, fetchFeedItems, uniqueByUrl, pickTopics, linesFromText } from '../lib/topicFeed.js';
+import {
+  SOCIAL_FEEDS,
+  fetchFeedItems,
+  fetchYoutubeTrends24NL,
+  uniqueByUrl,
+  pickTopics,
+  linesFromText,
+} from '../lib/topicFeed.js';
 
 async function readJsonBody(req) {
   if (req.method !== 'POST') return {};
@@ -46,10 +53,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const batches = await Promise.all(
-      SOCIAL_FEEDS.map((f) => fetchFeedItems(f.url, f.source, f.prefix))
-    );
-    const merged = uniqueByUrl(batches.flat());
+    const [batches, ytTrends] = await Promise.all([
+      Promise.all(SOCIAL_FEEDS.map((f) => fetchFeedItems(f.url, f.source, f.prefix))),
+      fetchYoutubeTrends24NL(),
+    ]);
+    const merged = uniqueByUrl([...batches.flat(), ...ytTrends]);
     let topics = pickTopics(merged, {
       excludeUrls,
       excludeTitles,
