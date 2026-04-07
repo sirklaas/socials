@@ -212,8 +212,9 @@ export function pickTopics(items, { excludeUrls = [], excludeTitles = [], count 
   return selected.slice(0, count);
 }
 
-/** First Concept column: entertainment headlines (single RSS, easy to swap). */
+/** Dutch news columns: entertainment + culture (allowlist; heavy topics filtered). */
 export const NEWS_FEEDS = [
+  { url: 'https://feeds.nos.nl/noscultuur-en-media', source: 'NOS Cultuur & Media', prefix: 'nos-cult' },
   { url: 'https://www.nu.nl/rss/Entertainment', source: 'nu.nl Entertainment', prefix: 'nu-ent' },
 ];
 

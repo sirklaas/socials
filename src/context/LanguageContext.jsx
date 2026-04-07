@@ -79,6 +79,15 @@ const translations = {
         step3ConfirmedBadge: 'Confirmed for this campaign',
         step3MockGalleryHint:
             'Demo block: placeholder Unsplash grid only — not tied to Claude. Use your image tool with the prompts.',
+        step1ImagePromptsInVisuals:
+            'For this channel, generate tailored main + sub image prompts in step 3 (Visuals).',
+        step1BlogImagePromptExplain:
+            'For blog, Claude outputs English hero + inline image prompts (Midjourney / SDXL style).',
+        step1FacebookLinkedHint:
+            'Instagram-related target: Facebook-from-Instagram sync can follow this choice later.',
+        step1ConfirmHint: 'Confirm to load the chosen card into the blog and downstream steps.',
+        step3ChannelImagePromptsExplain:
+            'Choose a target channel, then generate English main + sub prompts tuned for that format.',
 
         // Video Step
         videoScript: 'Video Script',
@@ -290,6 +299,15 @@ const translations = {
         step3ConfirmedBadge: 'Bevestigd voor deze campagne',
         step3MockGalleryHint:
             'Demo: Unsplash-placeholderrooster — niet gekoppeld aan Claude. Gebruik je image-tool met de prompts.',
+        step1ImagePromptsInVisuals:
+            'Voor dit kanaal: genereer afgestelde hoofd- en sub-prompts in stap 3 (Visuals).',
+        step1BlogImagePromptExplain:
+            'Voor blog: Claude levert Engelse hero- en sub-prompts (Midjourney / SDXL-stijl).',
+        step1FacebookLinkedHint:
+            'Instagram-gericht kanaal: synced posting naar Facebook kan hier later op aansluiten.',
+        step1ConfirmHint: 'Bevestig om het gekozen concept naar de blog en vervolgstappen te zetten.',
+        step3ChannelImagePromptsExplain:
+            'Kies een doelkanaal en genereer Engelse hoofd- en sub-prompts afgestemd op dat format.',
 
         // Video Step
         videoScript: 'Video Script',

@@ -7,6 +7,8 @@ export const defaultIdeaFlow = {
     newsTopics: [],
     socialTopics: [],
     pinkmilkTopics: [],
+    /** 'lp' when topics came from PINKMILK_LP JSON via API; 'static' for built-in show list */
+    pinkmilkTopicPoolSource: null,
     pinkmilkExtra: '',
     picks: { newsUrl: null, socialUrl: null, pinkmilkId: null },
     conceptCards: [],

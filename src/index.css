@@ -47,7 +47,7 @@
     --shadow-primary: 0 4px 12px rgba(37, 99, 235, 0.3);
 
     /* Layout */
-    --sidebar-width: 232px;
+    --sidebar-width: 196px;
     --topnav-height: 64px;
     --container-radius: 16px;
     --button-radius: 8px;
@@ -620,31 +620,35 @@ h6 {
     font-weight: 500;
 }
 
-/* Concept step — upper / lower halves: topics vs AI row */
+/* Concept step — 1fr / 2fr: sources (left) vs channel + AI cards (right) */
 .concept-step {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0 10px;
     height: 100%;
     min-height: 0;
     max-height: 100%;
     overflow: hidden;
-    gap: 0;
     background: var(--white);
     border-radius: var(--container-radius);
     box-shadow: var(--shadow-sm);
     padding: 8px 12px 8px;
 }
 
-/* More vertical space for AI cards than for topic columns (~1 : 2) */
-.concept-step__upper {
-    flex: 2 1 0;
+.concept-step__pane--sources {
     min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-bottom: 1px solid var(--slate-200);
-    padding-bottom: 6px;
-    margin-bottom: 6px;
+    border-right: 1px solid var(--slate-200);
+    padding-right: 8px;
+}
+
+.concept-step__pane--concepts {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .concept-step__upper-inner {
@@ -653,17 +657,26 @@ h6 {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    /* Scroll binnen het blok — geen hele-pagina dashboard-scroll */
     overflow-x: hidden;
     overflow-y: auto;
 }
 
-.concept-step__lower {
-    flex: 4 1 0;
+.concept-step__concepts-inner {
+    flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
+    gap: 8px;
     overflow: hidden;
+}
+
+.concept-step__channel-block {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--slate-100);
 }
 
 .concept-step__lower-empty {
@@ -676,6 +689,21 @@ h6 {
     background: var(--slate-50);
     border-radius: 10px;
     border: 1px dashed var(--slate-200);
+}
+
+@media (max-width: 960px) {
+    .concept-step {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+
+    .concept-step__pane--sources {
+        border-right: none;
+        border-bottom: 1px solid var(--slate-200);
+        padding-right: 0;
+        padding-bottom: 8px;
+        max-height: min(48vh, 420px);
+    }
 }
 
 .concept-step__cols {
@@ -928,19 +956,6 @@ h6 {
     font-size: 11px;
 }
 
-.concept-step__prompts {
-    font-size: 10px;
-    flex: 0 1 auto;
-    max-height: 5.5rem;
-    min-height: 0;
-    overflow: hidden;
-    padding: 6px 8px;
-    background: var(--slate-50);
-    border-radius: 6px;
-    margin-top: 4px;
-    line-height: 1.35;
-}
-
 .concept-step .btn-sm {
     padding: 6px 12px;
     font-size: 12px;
@@ -949,6 +964,16 @@ h6 {
 .concept-step .concept-topic-col__refresh.btn-sm {
     padding: 4px 8px;
     font-size: 11px;
+}
+
+.visual-step-channel-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.visual-step-channel-pills__btn {
+    flex: 0 1 auto;
 }
 
 /* Visual step — three Claude prompt variants */
