@@ -66,6 +66,19 @@ const translations = {
         generateImages: 'Generate Images',
         generatedImages: 'Generated Images',
         noImages: 'No images generated yet',
+        step3NeedsBrief:
+            'Choose a concept in step 1 (or add a blog title) so Claude has a brief to work from.',
+        step3GenerateClaudeVariants: 'Generate 3 visual prompts (Claude)',
+        step3ClaudeGenerating: 'Claude is writing prompts…',
+        step3ClaudeExplain:
+            'Anthropic Claude returns three English prompt pairs (hero + sub) for tools like Midjourney / SDXL.',
+        step3ClaudeConceptsTitle: 'AI visual concepts',
+        step3NoVariantsYet: 'No prompt concepts yet',
+        step3NoVariantsHint: 'Pick a visual style on the left, then generate three Claude concepts.',
+        step3ConfirmVisualPrompts: 'Confirm chosen prompts',
+        step3ConfirmedBadge: 'Confirmed for this campaign',
+        step3MockGalleryHint:
+            'Demo block: placeholder Unsplash grid only — not tied to Claude. Use your image tool with the prompts.',
 
         // Video Step
         videoScript: 'Video Script',
@@ -173,13 +186,21 @@ const translations = {
         chBluesky: 'Bluesky',
         genImagePrompts: 'Generate image prompts',
         imagePromptsTitle: 'Image prompts (AI)',
+        imagePromptClaudeNote:
+            'Uses Anthropic Claude (same API key as concepts) to write English text prompts for tools like Midjourney or SDXL — not the images themselves.',
         imagePromptMain: 'Main / hero',
         imagePromptSub: 'Sub image',
         confirmStep1: 'Confirm & continue',
+        saveToPocketBase: 'Save to PocketBase',
+        saveToPocketBaseHint:
+            'Pushes the current campaign (incl. blog JSON) so site/blog consumers can read it.',
+        offlineNoPocketBase: 'Offline campaign: create or pick a live campaign to sync to PocketBase.',
         facebookLinkedNote: 'Facebook will mirror Instagram for this campaign.',
         step1InspirationTitle: 'Pick your inspiration',
         step1TopicFeedIntro:
             'Three columns: pick one topic each. Then generate five AI concepts — they appear in one row below.',
+        conceptHalfPlaceholder:
+            'AI concepts and actions will use this lower half after you generate cards.',
 
         // Days
         mon: 'Mon',
@@ -255,6 +276,19 @@ const translations = {
         generateImages: 'Genereer Afbeeldingen',
         generatedImages: 'Gegenereerde Afbeeldingen',
         noImages: 'Nog geen afbeeldingen gegenereerd',
+        step3NeedsBrief:
+            'Kies eerst een concept in stap 1 (of vul een blogtitel) zodat Claude een brief heeft.',
+        step3GenerateClaudeVariants: 'Genereer 3 visuele prompts (Claude)',
+        step3ClaudeGenerating: 'Claude schrijft prompts…',
+        step3ClaudeExplain:
+            'Anthropic Claude levert drie Engelse prompt-paren (hoofd + sub) voor o.a. Midjourney / SDXL.',
+        step3ClaudeConceptsTitle: 'AI-beeldconcepten',
+        step3NoVariantsYet: 'Nog geen promptconcepten',
+        step3NoVariantsHint: 'Kies een stijl links en genereer drie Claude-concepten.',
+        step3ConfirmVisualPrompts: 'Bevestig gekozen prompts',
+        step3ConfirmedBadge: 'Bevestigd voor deze campagne',
+        step3MockGalleryHint:
+            'Demo: Unsplash-placeholderrooster — niet gekoppeld aan Claude. Gebruik je image-tool met de prompts.',
 
         // Video Step
         videoScript: 'Video Script',
@@ -362,13 +396,22 @@ const translations = {
         chBluesky: 'Bluesky',
         genImagePrompts: 'Genereer image prompts',
         imagePromptsTitle: 'Image prompts (AI)',
+        imagePromptClaudeNote:
+            'Gebruikt Anthropic Claude (zelfde API key als concepten) voor Engelse tekstprompts voor o.a. Midjourney of SDXL — niet voor het renderen van plaatjes zelf.',
         imagePromptMain: 'Hoofd / hero',
         imagePromptSub: 'Sub-afbeelding',
         confirmStep1: 'Bevestig & ga verder',
+        saveToPocketBase: 'Opslaan naar PocketBase',
+        saveToPocketBaseHint:
+            'Stuurt de huidige campagne (o.a. blog-JSON) naar de database zodat blogpagina’s die kunnen uitlezen.',
+        offlineNoPocketBase:
+            'Offline campagne: kies of maak een live campagne om met PocketBase te synchroniseren.',
         facebookLinkedNote: 'Facebook wordt voor deze campagne meegezet met Instagram.',
         step1InspirationTitle: 'Kies je inspiratie',
         step1TopicFeedIntro:
             'Drie kolommen: kies per kolom één topic. Genereer daarna vijf AI-concepten — die verschijnen in één rij eronder.',
+        conceptHalfPlaceholder:
+            'AI-concepten en acties verschijnen hier in de onderste helft zodra je kaarten hebt gegenereerd.',
 
         // Days
         mon: 'Ma',

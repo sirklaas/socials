@@ -6,6 +6,7 @@ import {
     Newspaper,
     TrendingUp,
     Heart,
+    CloudUpload,
 } from 'lucide-react';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -109,7 +110,15 @@ function TopicColumn({
 }
 
 export default function ConceptStep() {
-    const { contentData, updateIdeaFlow, confirmStep1Blog, currentRecordId } = useGlobalContext();
+    const {
+        contentData,
+        updateIdeaFlow,
+        confirmStep1Blog,
+        markStepComplete,
+        currentRecordId,
+        forceSave,
+        isSaving,
+    } = useGlobalContext();
     const { language, t } = useLanguage();
     const idea = contentData.concept.ideaFlow || {};
 
@@ -119,6 +128,8 @@ export default function ConceptStep() {
     const [genCards, setGenCards] = useState(false);
     const [genImg, setGenImg] = useState(false);
     const [claudeErr, setClaudeErr] = useState(null);
+    const [pbSyncErr, setPbSyncErr] = useState(null);
+    const [pbInfo, setPbInfo] = useState(null);
     const loadInProgress = useRef(false);
 
     const loadInitial = useCallback(async () => {
@@ -294,16 +305,35 @@ export default function ConceptStep() {
         }
     };
 
-    const handleConfirm = () => {
+    const canSyncPocketBase = !!(currentRecordId && !String(currentRecordId).startsWith('local-'));
+
+    const handleConfirm = async () => {
         if (!selectedCard) return;
         if ((idea.selectedChannel || 'blog') !== 'blog') {
             return;
         }
-        confirmStep1Blog(selectedCard, idea.imagePrompts);
+        setPbSyncErr(null);
+        setPbInfo(null);
+        const res = await confirmStep1Blog(selectedCard, idea.imagePrompts);
+        markStepComplete(1);
+        if (res?.error) {
+            setPbSyncErr(res.error.message || 'PocketBase sync mislukt.');
+        } else if (res?.ok && !res.pushed) {
+            setPbInfo(t('offlineNoPocketBase'));
+        }
+    };
+
+    const handleSaveToPocketBase = async () => {
+        if (!canSyncPocketBase) return;
+        setPbSyncErr(null);
+        setPbInfo(null);
+        await forceSave();
     };
 
     return (
         <div className="concept-step">
+            <div className="concept-step__upper">
+                <div className="concept-step__upper-inner">
             <div className="concept-step__cols">
                 <TopicColumn
                     icon={Newspaper}
@@ -380,7 +410,7 @@ export default function ConceptStep() {
                 </div>
             )}
 
-            {claudeErr && (
+            {(claudeErr || pbSyncErr) && (
                 <div
                     style={{
                         padding: '8px 10px',
@@ -391,11 +421,28 @@ export default function ConceptStep() {
                         fontSize: '12px',
                     }}
                 >
-                    {claudeErr}
+                    {claudeErr || pbSyncErr}
                 </div>
             )}
 
-            {hasCards && (
+            {pbInfo && !claudeErr && !pbSyncErr && (
+                <div
+                    className="text-caption text-muted"
+                    style={{
+                        padding: '8px 10px',
+                        background: 'var(--slate-50)',
+                        border: '1px solid var(--slate-200)',
+                        borderRadius: '8px',
+                    }}
+                >
+                    {pbInfo}
+                </div>
+            )}
+                </div>
+            </div>
+
+            <div className="concept-step__lower">
+            {hasCards ? (
                 <div className="concept-step__ai-wrap">
                     <div className="concept-step__ai-row">
                         {idea.conceptCards.map((c) => {
@@ -441,11 +488,26 @@ export default function ConceptStep() {
                             ))}
                         </div>
                         {selectedCard && (
-                            <button type="button" className="btn btn-secondary btn-sm" onClick={handleGenImages} disabled={genImg}>
-                                {genImg ? <RefreshCw size={12} className="icon-spin" /> : <Wand2 size={12} />}
-                                {t('genImagePrompts')}
-                            </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                                <button type="button" className="btn btn-secondary btn-sm" onClick={handleGenImages} disabled={genImg}>
+                                    {genImg ? <RefreshCw size={12} className="icon-spin" /> : <Wand2 size={12} />}
+                                    {t('genImagePrompts')}
+                                </button>
+                                <p className="text-caption text-muted" style={{ margin: 0, maxWidth: 420 }}>
+                                    {t('imagePromptClaudeNote')}
+                                </p>
+                            </div>
                         )}
+                        <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            disabled={!canSyncPocketBase || isSaving}
+                            onClick={handleSaveToPocketBase}
+                            title={t('saveToPocketBaseHint')}
+                        >
+                            {isSaving ? <RefreshCw size={12} className="icon-spin" /> : <CloudUpload size={12} />}
+                            {t('saveToPocketBase')}
+                        </button>
                         <button
                             type="button"
                             className="btn btn-primary btn-sm"
@@ -455,6 +517,9 @@ export default function ConceptStep() {
                             {t('confirmStep1')}
                         </button>
                     </div>
+                    <p className="text-caption text-muted" style={{ margin: '0 0 4px' }}>
+                        {t('saveToPocketBaseHint')}
+                    </p>
                     {idea.imagePrompts && (
                         <div className="concept-step__prompts">
                             <strong>{t('imagePromptMain')}</strong> {idea.imagePrompts.main}
@@ -463,7 +528,14 @@ export default function ConceptStep() {
                         </div>
                     )}
                 </div>
+            ) : (
+                <div className="concept-step__lower-empty">
+                    <p className="text-caption text-muted" style={{ margin: 0, textAlign: 'center', maxWidth: 480 }}>
+                        {t('conceptHalfPlaceholder')}
+                    </p>
+                </div>
             )}
+            </div>
 
         </div>
     );

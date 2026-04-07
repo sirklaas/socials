@@ -59,6 +59,8 @@ const initialContentData = {
         variations: [],
         thumbnails: [],
         imagePrompts: null,
+        claudeVisualVariants: null,
+        selectedPromptVariantId: null,
     },
     video: {
         script: '',
@@ -77,6 +79,52 @@ const initialContentData = {
         platformSettings: {}
     }
 };
+
+/** Merge step-1 blog selection into content state (pure). */
+function buildContentAfterStep1Blog(prev, card, imagePrompts) {
+    const legacySelected = {
+        id: card.id,
+        title: card.heading,
+        description: card.body,
+        keyPoints: [card.intro_heading, card.sub_heading].filter(Boolean),
+    };
+    return {
+        ...prev,
+        concept: {
+            ...prev.concept,
+            topic: card.heading || prev.concept.topic,
+            selected: legacySelected,
+            suggestions: prev.concept.ideaFlow?.conceptCards?.length
+                ? prev.concept.ideaFlow.conceptCards.map((c, i) => ({
+                      id: c.id ?? i + 1,
+                      title: c.heading,
+                      description: c.body,
+                      keyPoints: [c.intro_heading, c.sub_heading].filter(Boolean),
+                  }))
+                : prev.concept.suggestions,
+            ideaFlow: {
+                ...prev.concept.ideaFlow,
+                imagePrompts: imagePrompts || prev.concept.ideaFlow?.imagePrompts || null,
+            },
+        },
+        blog: {
+            ...prev.blog,
+            title: card.heading || prev.blog.title,
+            content:
+                `${card.intro_heading ? `*${card.intro_heading}*\n\n` : ''}${card.body || ''}`.trim() ||
+                prev.blog.content,
+            seo: {
+                ...prev.blog.seo,
+                title: card.heading || prev.blog.seo?.title,
+                description: (card.sub_heading || card.body || '').slice(0, 160),
+            },
+        },
+        visuals: {
+            ...prev.visuals,
+            imagePrompts: imagePrompts || prev.visuals.imagePrompts,
+        },
+    };
+}
 
 export const GlobalProvider = ({ children }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -231,51 +279,37 @@ export const GlobalProvider = ({ children }) => {
         });
     }, []);
 
-    const confirmStep1Blog = useCallback((card, imagePrompts) => {
-        if (!card) return;
-        const legacySelected = {
-            id: card.id,
-            title: card.heading,
-            description: card.body,
-            keyPoints: [card.intro_heading, card.sub_heading].filter(Boolean),
-        };
-        setContentData(prev => ({
-            ...prev,
-            concept: {
-                ...prev.concept,
-                topic: card.heading || prev.concept.topic,
-                selected: legacySelected,
-                suggestions: prev.concept.ideaFlow?.conceptCards?.length
-                    ? prev.concept.ideaFlow.conceptCards.map((c, i) => ({
-                          id: c.id ?? i + 1,
-                          title: c.heading,
-                          description: c.body,
-                          keyPoints: [c.intro_heading, c.sub_heading].filter(Boolean),
-                      }))
-                    : prev.concept.suggestions,
-                ideaFlow: {
-                    ...prev.concept.ideaFlow,
-                    imagePrompts: imagePrompts || prev.concept.ideaFlow?.imagePrompts || null,
-                },
-            },
-            blog: {
-                ...prev.blog,
-                title: card.heading || prev.blog.title,
-                content:
-                    `${card.intro_heading ? `*${card.intro_heading}*\n\n` : ''}${card.body || ''}`.trim() ||
-                    prev.blog.content,
-                seo: {
-                    ...prev.blog.seo,
-                    title: card.heading || prev.blog.seo?.title,
-                    description: (card.sub_heading || card.body || '').slice(0, 160),
-                },
-            },
-            visuals: {
-                ...prev.visuals,
-                imagePrompts: imagePrompts || prev.visuals.imagePrompts,
-            },
-        }));
-    }, []);
+    const confirmStep1Blog = useCallback(async (card, imagePrompts) => {
+        if (!card) return { ok: false, pushed: false };
+        let nextSnapshot;
+        setContentData((prev) => {
+            nextSnapshot = buildContentAfterStep1Blog(prev, card, imagePrompts);
+            return nextSnapshot;
+        });
+
+        const id = currentRecordId;
+        if (id && !id.startsWith('local-') && nextSnapshot) {
+            setIsSaving(true);
+            try {
+                await updateSocial(id, {
+                    concept: nextSnapshot.concept,
+                    platforms: nextSnapshot.platforms,
+                    visuals: nextSnapshot.visuals,
+                    video: nextSnapshot.video,
+                    blog: nextSnapshot.blog,
+                    schedule: nextSnapshot.schedule,
+                });
+                setLastSaved(new Date());
+                return { ok: true, pushed: true };
+            } catch (error) {
+                console.error('PocketBase sync after step 1 failed:', error);
+                return { ok: false, pushed: false, error };
+            } finally {
+                setIsSaving(false);
+            }
+        }
+        return { ok: true, pushed: false };
+    }, [currentRecordId]);
 
     const setPlatformContent = (platform, data) => {
         setContentData(prev => ({

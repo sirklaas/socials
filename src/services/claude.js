@@ -17,7 +17,7 @@ const CONCEPT_SYSTEM = `You are Pink Milk's creative partner: Dutch entertainmen
 
 function missingKeyError() {
     return new Error(
-        'Geen API key. Open het bestand .env naast package.json en zet één regel: ANTHROPIC_API_KEY=jouw_key hier (of VITE_ANTHROPIC_API_KEY=...). Sla op en herstart npm run dev.',
+        'Geen API key. Open het bestand .env naast package.json en zet één regel: ANTHROPIC_API_KEY=… (of VITE_ANTHROPIC_API_KEY=… of VITE_CLAUDE_API_KEY=…), zonder aanhalingstekens. Sla op en herstart npm run dev. Op Vercel: zelfde variabele(n) onder Project Settings → Environment Variables en opnieuw deployen.',
     );
 }
 
@@ -77,6 +77,15 @@ Rules:
 - Avoid war, graphic violence, crime sensationalism, and cruel punch-down humor.
 - Language for all user-visible strings: **${langName}**.
 
+## PocketBase / CMS field mapping (must follow)
+
+Each card is stored in the app as JSON and copied into the campaign **blog** object in PocketBase (\`blog.title\`, \`blog.content\`, \`blog.seo\`). Fill every field on purpose:
+
+- **intro_heading**: Kicker / hook above the article. Shown before the body (in the editor it is prefixed as an italic intro line). Keep it punchy (one short line).
+- **heading**: Main H1 and **blog title**. Also becomes **SEO title** (\`blog.seo.title\`). Must work as a standalone headline.
+- **sub_heading**: Dek / subtitle — supports the heading and seeds **meta description** (with body text truncated for length). One or two lines.
+- **body**: Full post copy: **4–8** short paragraphs or single lines separated by line breaks. This is the bulk of \`blog.content\` (after the intro line). Plain text only, no markdown headings.
+
 Return ONLY valid JSON (no markdown, no commentary):
 {
   "cards": [
@@ -104,6 +113,88 @@ Use ids "1" through "5".`;
     return parsed.cards.slice(0, 5);
 }
 
+const VISUAL_DIRECTOR_SYSTEM = `You are an art director for Pink Milk: Dutch entertainment, live-show energy, quizzes, warm sharp humor. You write English prompts for diffusion / image models (no text in images, no logos, no real celebrity faces).`;
+
+/**
+ * Step 3: three distinct visual directions (hero + sub image prompts each).
+ * @param {object} ctx
+ * @param {{ intro_heading?: string, heading?: string, sub_heading?: string, body?: string }} ctx.card
+ * @param {{ main?: string, sub?: string } | null} ctx.seedPrompts — optional hints from step 1
+ * @param {string} ctx.visualStyle minimal | bold | professional | creative
+ * @param {'nl'|'en'} ctx.lang
+ */
+export async function generateThreeVisualPromptVariants(ctx) {
+    const { card = {}, seedPrompts = null, visualStyle = 'minimal', lang = 'nl' } = ctx;
+    const styleGuide = {
+        minimal: 'clean negative space, restrained palette, calm composition, typography-friendly',
+        bold: 'high contrast, saturated accents, dynamic asymmetry, high energy',
+        professional: 'polished, broadcast-grade, trustworthy studio lighting',
+        creative: 'unexpected framing, playful editorial feel, artistic risk',
+    };
+    const styleLine = styleGuide[visualStyle] || styleGuide.minimal;
+    const seedBlock =
+        seedPrompts && (seedPrompts.main || seedPrompts.sub)
+            ? `Reference prompts from earlier (reinterpret — do not copy):\n- Main: ${seedPrompts.main || '—'}\n- Sub: ${seedPrompts.sub || '—'}\n`
+            : '';
+
+    const langName = lang === 'nl' ? 'Dutch' : 'English';
+    const prompt = `## Content brief (for mood only)
+- intro_heading: ${card.intro_heading || '—'}
+- heading: ${card.heading || '—'}
+- sub_heading: ${card.sub_heading || '—'}
+- body excerpt: ${(card.body || '').slice(0, 1800)}
+
+${seedBlock}
+## Visual direction lock
+Apply this aesthetic across all three concepts: **${styleLine}** (interpret in three different ways).
+
+## Task
+Produce **exactly 3** clearly **different** visual concepts for still images (hero + secondary) for this campaign.
+Each concept must have a distinct composition idea, mood, and color story — not three tiny tweaks of the same shot.
+
+Rules:
+- Prompts in **English** (best for image models).
+- No readable text, lettering, or logos in the scene.
+- No specific real celebrity or politician likenesses.
+
+Return ONLY valid JSON (no markdown):
+{
+  "variants": [
+    {
+      "id": "1",
+      "label": "short name for this look, max 6 words",
+      "angle": "one sentence: what makes this direction unique",
+      "main_image_prompt": "one detailed paragraph: hero / key art",
+      "sub_image_prompt": "one detailed paragraph: secondary / sectional / companion image"
+    }
+  ]
+}
+
+Use ids "1", "2", "3". Context for tone of the show (not literal text in images): content is **${langName}**-market entertainment.`;
+
+    const raw = await callClaude(
+        prompt,
+        `${VISUAL_DIRECTOR_SYSTEM} Return ONLY valid JSON. No markdown.`,
+        4096,
+    );
+    const parsed = extractJson(raw);
+    if (!parsed || !Array.isArray(parsed.variants) || parsed.variants.length < 3) {
+        throw new Error(
+            lang === 'nl'
+                ? 'Claude gaf geen 3 visuele concepten terug. Probeer opnieuw.'
+                : 'Claude did not return 3 visual concepts. Try again.',
+        );
+    }
+    return parsed.variants.slice(0, 3).map((v, i) => ({
+        id: String(v.id ?? i + 1),
+        label: String(v.label || `Concept ${i + 1}`),
+        angle: String(v.angle || ''),
+        main_image_prompt: String(v.main_image_prompt || ''),
+        sub_image_prompt: String(v.sub_image_prompt || v.main_image_prompt || ''),
+    }));
+}
+
+/** English image briefs via Anthropic Claude (text-only); use those prompts in Midjourney, SDXL, etc. */
 export async function generateImagePromptsForChannel(card, channel, lang = 'nl') {
     const prompt = `Create image generation prompts for an AI image model (e.g. Midjourney / SDXL style).
 
@@ -137,4 +228,8 @@ Preferred content language context for the brief: ${lang === 'nl' ? 'Dutch' : 'E
     };
 }
 
-export default { generateIdeaConceptCards, generateImagePromptsForChannel };
+export default {
+    generateIdeaConceptCards,
+    generateImagePromptsForChannel,
+    generateThreeVisualPromptVariants,
+};
