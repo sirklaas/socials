@@ -1,9 +1,13 @@
 /* ===================================================
    PINK MILK SOCIAL ENGINE - Design System
    Modern, Light Theme with Blue/Purple Accents
+   Enhanced with huashu-design principles
    =================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@300;400;500&family=Inter:wght@400;500;600&display=swap');
+
+/* huashu-design: Sophisticated Micro-interactions */
+@import url('./design-enhancements.css');
 
 :root {
     /* Typography */

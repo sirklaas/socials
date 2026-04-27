@@ -10,11 +10,8 @@ import {
     Calendar,
     Check,
     ArrowRight,
-    User,
-    Send,
-    Languages
+    Send
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { GlobalProvider, useGlobalContext } from './context/GlobalContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import StepRenderer from './StepRenderer';
@@ -29,26 +26,6 @@ const STEPS = [
     { id: 7, name: 'step7', subtitle: 'step7Sub', icon: CheckCircle },
     { id: 8, name: 'step8', subtitle: 'step8Sub', icon: Calendar }
 ];
-
-function LanguageToggle() {
-    const { language, toggleLanguage } = useLanguage();
-
-    return (
-        <button
-            onClick={toggleLanguage}
-            className="btn btn-secondary btn-sm"
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                minWidth: '80px'
-            }}
-        >
-            <Languages size={16} />
-            {language.toUpperCase()}
-        </button>
-    );
-}
 
 function Dashboard() {
     const {
@@ -142,52 +119,11 @@ function Dashboard() {
                             ))}
                         </select>
                     )}
-                    <div className="flex items-center gap-md">
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            background: currentRecordId?.startsWith('local-') ? 'rgba(245, 158, 11, 0.1)' : 'rgba(14, 165, 233, 0.1)',
-                            color: currentRecordId?.startsWith('local-') ? 'var(--warning)' : 'var(--success)',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
-                        }}>
-                            <div style={{
-                                width: '6px',
-                                height: '6px',
-                                borderRadius: '50%',
-                                background: 'currentColor'
-                            }} />
-                            {currentRecordId?.startsWith('local-') ? 'Offline Mode' : 'Live Sync'}
-                        </div>
-                        <span className="text-small text-muted">
-                            {isSaving ? t('savingStatus') : formatLastSaved()}
-                        </span>
-                    </div>
                     <button className="btn btn-secondary btn-sm" onClick={() => createNewCampaign()}>
                         {t('newCampaign')}
                     </button>
                     <button className="btn btn-primary btn-sm">
                         <Send size={16} /> {t('publishNow')}
-                    </button>
-                    <div style={{ width: '1px', height: '32px', background: 'var(--slate-200)', margin: '0 8px' }} />
-                    <LanguageToggle />
-                    <button style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        background: 'var(--primary-ultralight)',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer'
-                    }}>
-                        <User size={20} style={{ color: 'var(--primary)' }} />
                     </button>
                 </div>
             </header>
@@ -200,8 +136,8 @@ function Dashboard() {
                         <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--slate-950)' }}>{t('contentCampaign')}</p>
                     </div>
 
-                    <nav className="sidebar-nav">
-                        {STEPS.map((step) => {
+                    <nav className="sidebar-nav" style={{ '--progress-percent': `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}>
+                        {STEPS.map((step, index) => {
                             const Icon = step.icon;
                             const isActive = currentStep === step.id;
                             const isCompleted = completedSteps.includes(step.id);
@@ -216,15 +152,17 @@ function Dashboard() {
                                     onClick={() => setCurrentStep(step.id)}
                                     className={buttonClass}
                                 >
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '8px',
-                                        background: isActive ? 'rgba(255,255,255,0.2)' : isCompleted ? 'var(--primary-light)' : 'var(--slate-100)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
+                                    <div 
+                                        style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            borderRadius: '8px',
+                                            background: isActive ? 'rgba(255,255,255,0.2)' : isCompleted ? 'var(--primary-light)' : 'var(--slate-100)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
                                         {isCompleted && !isActive ? (
                                             <Check size={16} style={{ color: 'var(--white)' }} />
                                         ) : (
@@ -237,7 +175,9 @@ function Dashboard() {
                                         </div>
                                         <p>{t(step.subtitle)}</p>
                                     </div>
-                                    {isActive && <ArrowRight size={16} />}
+                                    {isActive && (
+                                        <ArrowRight size={16} />
+                                    )}
                                 </button>
                             );
                         })}
@@ -262,18 +202,9 @@ function Dashboard() {
 
                 {/* Main Content */}
                 <main className="main-content">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentStep}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3 }}
-                            style={{ height: '100%' }}
-                        >
-                            <StepRenderer />
-                        </motion.div>
-                    </AnimatePresence>
+                    <div style={{ height: '100%' }}>
+                        <StepRenderer />
+                    </div>
                 </main>
             </div>
         </div>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direction A: Professional Enterprise — Pink Milk Social Engine</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            /* Direction A: Professional Enterprise (Refinement of current) */
+            --primary: #1e3a5f;
+            --primary-dark: #0f1f35;
+            --primary-light: #3b6a9a;
+            --primary-ultralight: #e8f0f8;
+            
+            --accent-teal: #0d9488;
+            --accent-coral: #ea580c;
+            
+            --slate-950: #020617;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-300: #cbd5e1;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+            
+            --font-heading: 'Barlow', sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            
+            --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--slate-50);
+            color: var(--slate-700);
+            line-height: 1.6;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .top-nav {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 24px;
+        }
+
+        .brand {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--slate-950);
+            letter-spacing: -0.02em;
+        }
+
+        .brand span {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .app-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Direction A: Clean, subtle sidebar with refined depth */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, white 0%, var(--slate-50) 100%);
+            border-right: 1px solid var(--slate-200);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--slate-200);
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            color: var(--slate-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header h3 {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--slate-950);
+        }
+
+        .step-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            color: var(--slate-700);
+            font-family: var(--font-heading);
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+            transition: all 250ms var(--ease-out-quint);
+            position: relative;
+        }
+
+        .step-btn:hover {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            transform: translateX(4px);
+        }
+
+        .step-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .step-btn.completed {
+            background: var(--primary-ultralight);
+            color: var(--primary);
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--slate-100);
+            transition: all 200ms var(--ease-out-quint);
+        }
+
+        .step-btn.active .step-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .step-btn.completed .step-icon {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content p {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .content-container {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            max-width: 900px;
+        }
+
+        .container-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--slate-100);
+        }
+
+        .container-header h2 {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--slate-950);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--slate-700);
+            margin-bottom: 8px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--slate-300);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 15px;
+            transition: all 200ms var(--ease-out-quint);
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-ultralight);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 15px;
+            font-weight: 400;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 200ms var(--ease-out-quint);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background: rgba(13, 148, 136, 0.1);
+            color: var(--accent-teal);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .variation-label {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--slate-950);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+        const { motion } = window.Motion;
+
+        const STEPS = [
+            { id: 1, name: 'Concept', subtitle: 'Define your content strategy', icon: 'Lightbulb' },
+            { id: 2, name: 'Copywriting', subtitle: 'Craft compelling text', icon: 'Type' },
+            { id: 3, name: 'Visual Assets', subtitle: 'Create or select images', icon: 'Image' },
+            { id: 4, name: 'Video Production', subtitle: 'Edit and produce video', icon: 'Video' },
+            { id: 5, name: 'Thumbnail', subtitle: 'Design engaging thumbnails', icon: 'Frame' },
+            { id: 6, name: 'Blog Post', subtitle: 'Write supporting article', icon: 'FileText' },
+            { id: 7, name: 'Review', subtitle: 'Final quality check', icon: 'CheckCircle' },
+            { id: 8, name: 'Publish', subtitle: 'Schedule and publish', icon: 'Calendar' }
+        ];
+
+        const Icon = ({ name, size = 16 }) => {
+            const icons = {
+                Lightbulb: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3L9 14"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
+                Type: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>,
+                Image: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>,
+                Video: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>,
+                Frame: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 8h16"/><path d="M4 16h16"/></svg>,
+                FileText: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+                CheckCircle: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+                Calendar: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            };
+            return icons[name] || null;
+        };
+
+        function App() {
+            const [currentStep, setCurrentStep] = useState(1);
+            const [completedSteps] = useState([1, 2]);
+
+            return (
+                <div className="app-layout">
+                    <header className="top-nav">
+                        <div className="brand">Pink Milk <span>Social Engine</span></div>
+                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <span className="status-badge">Live Sync</span>
+                            <button className="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                Publish Now
+                            </button>
+                        </div>
+                    </header>
+
+                    <div className="app-body">
+                        <aside className="sidebar">
+                            <div className="sidebar-header">
+                                <p>Workflow</p>
+                                <h3>Content Campaign</h3>
+                            </div>
+
+                            <nav>
+                                {STEPS.map((step) => {
+                                    const isActive = currentStep === step.id;
+                                    const isCompleted = completedSteps.includes(step.id);
+                                    
+                                    return (
+                                        <motion.button
+                                            key={step.id}
+                                            className={`step-btn ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+                                            onClick={() => setCurrentStep(step.id)}
+                                            whileHover={{ x: 4 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <div className="step-icon">
+                                                {isCompleted && !isActive ? (
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                                ) : (
+                                                    <Icon name={step.icon} />
+                                                )}
+                                            </div>
+                                            <div className="step-content">
+                                                <div>Step {step.id}: {step.name}</div>
+                                                <p>{step.subtitle}</p>
+                                            </div>
+                                        </motion.button>
+                                    );
+                                })}
+                            </nav>
+                        </aside>
+
+                        <main className="main-content">
+                            <motion.div 
+                                className="content-container"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <div className="container-header">
+                                    <h2>Step {currentStep}: {STEPS[currentStep-1].name}</h2>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label className="form-label">Content Title</label>
+                                    <input className="input" placeholder="Enter your content title..." />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label className="form-label">Description</label>
+                                    <textarea className="input" rows="4" placeholder="Describe your content strategy..." style={{ resize: 'vertical', minHeight: '100px' }} />
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '32px' }}>
+                                    <button className="btn" style={{ background: 'var(--slate-100)', color: 'var(--slate-700)' }}>Previous</button>
+                                    <button className="btn btn-primary">Save & Continue</button>
+                                </div>
+                            </motion.div>
+                        </main>
+                    </div>
+
+                    <div className="variation-label">Direction A: Professional Enterprise</div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
